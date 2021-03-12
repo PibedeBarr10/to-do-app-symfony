@@ -26,7 +26,5 @@ class MainController extends AbstractController
         return $this->render('home/custom.html.twig', [
             'name' => $name
         ]);
-
-        // http://localhost/index.php/custom/Mark (do poprawy)
     }
 }
