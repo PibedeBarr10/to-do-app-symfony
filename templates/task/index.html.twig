@@ -18,10 +18,9 @@
         
                 <tr>
                     <td>{{ task.title }}</td>
-                    <td></td>   {# potem to usunąć #}
-                    {#<td>{{ task.deadline.date }}</td>#}
+                    <td>{{ task.deadline|date("d/m/Y") }}</td>
                     <td>
-                        <a href="/task/edit" class="btn btn-dark">Edytuj</a>
+                        <a href="/task/edit/{{ task.id }}" class="btn btn-dark">Edytuj</a>
                         <a href="{{ path('task.delete', {task: task.id }) }}" class="btn btn-danger delete-task">Usuń</a>
                     </td>
                 </tr>

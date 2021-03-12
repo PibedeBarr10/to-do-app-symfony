@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Task;
 use App\Repository\TaskRepository;
+use DateTime;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -22,25 +23,15 @@ class TaskController extends AbstractController
     public function index(TaskRepository $taskRepository): Response
     {
         $tasks = $taskRepository->findAll();
-        // dump($tasks);
+        
+        /*dump($tasks);
+        foreach ($tasks as $task) {
+            dump($task);
+        }*/
 
         return $this->render('task/index.html.twig', [
             'tasks' => $tasks,
         ]);
-    }
-
-    /**
-     * @Route("/delete/{task}", name = "delete")
-     */
-    public function delete(Task $task)
-    {
-        $em = $this->getDoctrine()->getManager();
-
-        $em->remove($task);
-        $em->flush();
-
-        return $this->redirect($this->generateUrl(route: 'task.index'));
-        // return $this->redirectToRoute('task.index');
     }
 
     /**
@@ -53,13 +44,16 @@ class TaskController extends AbstractController
 
         $form = $this->createFormBuilder($task)
             ->add('title', TextType::class, [
+                'label' => 'Treść zadania:',
                 'attr' => [
                     'class' => 'form-control'
                     ]
                 ])
-            ->add('deadline', DateType::class)
+            ->add('deadline', DateType::class, [
+                'label' => 'Ostateczny termin wykonania zadania:'
+            ])
             ->add('save', SubmitType::class, [
-                'label' => 'Dodaj',
+                'label' => 'Dodaj zadanie',
                 'attr' =>[
                     'class' => 'btn btn-primary mt-3'
                 ]
@@ -78,11 +72,67 @@ class TaskController extends AbstractController
             $em->persist($task);
             $em->flush();
 
-            // return $this->redirectToRoute('task.index');
-            return $this->redirect($this->generateUrl(route: 'task.index'));
+            return $this->redirectToRoute('task.index');
+            // return $this->redirect($this->generateUrl(route: 'task.index'));
         }
 
         return $this->render('task/create.html.twig', [
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/delete/{task}", name = "delete")
+     */
+    public function delete(Task $task)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $em->remove($task);
+        $em->flush();
+
+        // return $this->redirect($this->generateUrl(route: 'task.index'));
+        return $this->redirectToRoute('task.index');
+    }
+
+    /**
+     * @Route("/edit/{id}", name = "edit")
+     */
+    public function edit(Request $request, $id)
+    {
+        // create a new post with title and date
+        $task = new Task();
+        $task = $this->getDoctrine()->getRepository(Task::class)->find($id);
+
+        $form = $this->createFormBuilder($task)
+            ->add('title', TextType::class, [
+                'label' => 'Treść zadania:',
+                'attr' => [
+                    'class' => 'form-control'
+                    ]
+                ])
+            ->add('deadline', DateType::class, [
+                'label' => 'Ostateczny termin wykonania zadania:'
+            ])
+            ->add('save', SubmitType::class, [
+                'label' => 'Dodaj zadanie',
+                'attr' =>[
+                    'class' => 'btn btn-primary mt-3'
+                ]
+            ])
+            ->getForm();
+        
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()) {
+
+            $em = $this->getDoctrine()->getManager();
+            $em->flush();
+
+            return $this->redirectToRoute('task.index');
+        }
+
+        return $this->render('task/edit.html.twig', [
             'form' => $form->createView()
         ]);
     }
