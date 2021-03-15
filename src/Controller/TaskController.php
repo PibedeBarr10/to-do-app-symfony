@@ -39,7 +39,6 @@ class TaskController extends AbstractController
      */
     public function create(Request $request)
     {
-        // create a new post with title and date
         $task = new Task();
 
         $form = $this->createFormBuilder($task)

@@ -6,14 +6,25 @@
         </button>
 
         <div class="collapse navbar-collapse" id="mobile-nav">
+            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
             <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a href="/task" class="nav-link">Zadania</a>
-            </li>
-            <li class="nav-item">
-                <a href="/task/create" class="nav-link">Nowe zadanie</a>
-            </li>
+                <li class="nav-item">
+                    <a href="/task" class="nav-link">Zadania</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/task/create" class="nav-link">Nowe zadanie</a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logout" class="nav-link">Wyloguj się</a>
+                </li>
             </ul>
+            {% else %}
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a href="/login" class="nav-link">Zaloguj się</a>
+                </li>
+            </ul>
+            {% endif %}
         </div>
     </div>
 </nav>
