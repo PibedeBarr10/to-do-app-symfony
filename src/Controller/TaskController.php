@@ -22,7 +22,12 @@ class TaskController extends AbstractController
     #[Route('/', name: 'index')]
     public function index(TaskRepository $taskRepository): Response
     {
-        $tasks = $taskRepository->findAll();
+        $user = $this->get('security.token_storage')->getToken()->getUser();
+        $id = $user->getId();
+        // dump($id);
+
+        $tasks = $taskRepository->findUserTasks($id);
+        // dump($tasks);
         
         /*dump($tasks);
         foreach ($tasks as $task) {
@@ -62,11 +67,12 @@ class TaskController extends AbstractController
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid()) {
-            //$task->setTitle("Zadanie");
-            //$task->setDeadline(new \DateTime("2021-04-01"));
             $task = $form->getData();
-            // entity manager
 
+            $user = $this->get('security.token_storage')->getToken()->getUser();
+            $task -> setUserId($user);
+
+            // entity manager
             $em = $this->getDoctrine()->getManager();
             $em->persist($task);
             $em->flush();

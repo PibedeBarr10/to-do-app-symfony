@@ -27,6 +27,11 @@ class Task
      */
     private $deadline;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="task")
+     */
+    private $user_id;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -52,6 +57,18 @@ class Task
     public function setDeadline(\DateTimeInterface $deadline): self
     {
         $this->deadline = $deadline;
+
+        return $this;
+    }
+
+    public function getUserId(): ?User
+    {
+        return $this->user_id;
+    }
+
+    public function setUserId(?User $user_id): self
+    {
+        $this->user_id = $user_id;
 
         return $this;
     }

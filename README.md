@@ -1,5 +1,5 @@
 # To-Do App
 ---
 
-PHP 8
-Symfony 5
+* PHP 8
+* Symfony 5
