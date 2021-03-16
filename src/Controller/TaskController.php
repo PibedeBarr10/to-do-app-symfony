@@ -51,10 +51,14 @@ class TaskController extends AbstractController
                 'label' => 'Treść zadania:',
                 'attr' => [
                     'class' => 'form-control'
-                    ]
-                ])
+                ]
+            ])
             ->add('deadline', DateType::class, [
-                'label' => 'Ostateczny termin wykonania zadania:'
+                'label' => 'Ostateczny termin wykonania zadania:',
+                'widget' => 'single_text',
+                'attr' => [
+                    'class' => 'form-control'
+                ]
             ])
             ->add('save', SubmitType::class, [
                 'label' => 'Dodaj zadanie',

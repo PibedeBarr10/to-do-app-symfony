@@ -20,10 +20,15 @@ class RegistrationController extends AbstractController
     {
         $form = $this->createFormBuilder()
             ->add('email', EmailType::class, [
+                'required' => true,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
+                'invalid_message' => 'Hasła muszą być takie same',
+                'options' => [
+                    'attr' => ['class' => 'password-field']
+                ],
                 'required' => true,
                 'first_options' => [
                     'label' => 'Hasło:',
@@ -44,22 +49,28 @@ class RegistrationController extends AbstractController
         
         $form -> handleRequest($request);
 
-        if ($form -> isSubmitted())
+        if ($form -> isSubmitted() && $form -> isValid())
         {
             $data = $form -> getData();
+            $duplicate = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $data['email']]);
 
-            $user = new User();
-            $user -> setEmail($data['email']);
-            $user -> setPassword(
-                $passwordEncoder -> encodePassword($user, $data['password'])
-            );
             
-            $em = $this->getDoctrine()->getManager();
+            if (is_object($duplicate)) {
+                // dump($duplicate);
+            } else {
+                $user = new User();
+                $user -> setEmail($data['email']);
+                $user -> setPassword(
+                    $passwordEncoder -> encodePassword($user, $data['password'])
+                );
+                
+                $em = $this->getDoctrine()->getManager();
 
-            $em -> persist($user);
-            $em -> flush();
+                $em -> persist($user);
+                $em -> flush();
 
-            return $this->redirectToRoute('app_login');
+                return $this->redirectToRoute('app_login');
+            }
         }
 
         return $this->render('registration/index.html.twig', [

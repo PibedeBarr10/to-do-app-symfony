@@ -8,9 +8,16 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
- */
+ * @UniqueEntity(
+ *     fields={"email"},
+ *     message="Taki użytkownik już się zarejestrował!"
+ * )
+*/
 class User implements UserInterface
 {
     /**
@@ -22,6 +29,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank
      */
     private $email;
 
