@@ -10,6 +10,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 // use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -60,6 +61,13 @@ class TaskController extends AbstractController
                     'class' => 'form-control'
                 ]
             ])
+            ->add('checked', CheckboxType::class, [
+                'label' => 'Czy zadanie zostało wykonane?',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-check'
+                ]
+            ])
             ->add('save', SubmitType::class, [
                 'label' => 'Dodaj zadanie',
                 'attr' =>[
@@ -82,7 +90,6 @@ class TaskController extends AbstractController
             $em->flush();
 
             return $this->redirectToRoute('task.index');
-            // return $this->redirect($this->generateUrl(route: 'task.index'));
         }
 
         return $this->render('task/create.html.twig', [
@@ -109,7 +116,6 @@ class TaskController extends AbstractController
      */
     public function edit(Request $request, $id)
     {
-        // create a new post with title and date
         $task = new Task();
         $task = $this->getDoctrine()->getRepository(Task::class)->find($id);
 
@@ -118,13 +124,24 @@ class TaskController extends AbstractController
                 'label' => 'Treść zadania:',
                 'attr' => [
                     'class' => 'form-control'
-                    ]
-                ])
+                ]
+            ])
             ->add('deadline', DateType::class, [
-                'label' => 'Ostateczny termin wykonania zadania:'
+                'label' => 'Ostateczny termin wykonania zadania:',
+                'widget' => 'single_text',
+                'attr' => [
+                    'class' => 'form-control'
+                ]
+            ])
+            ->add('checked', CheckboxType::class, [
+                'label' => 'Czy zadanie zostało wykonane?',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-check'
+                ]
             ])
             ->add('save', SubmitType::class, [
-                'label' => 'Dodaj zadanie',
+                'label' => 'Edytuj zadanie',
                 'attr' =>[
                     'class' => 'btn btn-primary mt-3'
                 ]
