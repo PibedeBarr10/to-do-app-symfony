@@ -14,19 +14,13 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
-
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Security\Core\Encoder\MessageDigestPasswordEncoder;
-
 /**
  * @Route("/task", name = "task.")
  */
 class TaskController extends AbstractController
 {
     #[Route('/', name: 'index')]
-    public function index(TaskRepository $taskRepository, UserPasswordEncoderInterface $encoder): Response
+    public function index(TaskRepository $taskRepository): Response
     {
         $user = $this->get('security.token_storage')->getToken()->getUser();
         $id = $user->getId();
@@ -159,48 +153,5 @@ class TaskController extends AbstractController
         return $this->render('task/edit.html.twig', [
             'form' => $form->createView()
         ]);
-    }
-
-    /**
-     * @Route("/csv", name = "csv")
-     */
-    public function sendCSV(MailerInterface $mailer)
-    {
-        $file = fopen('tasks.csv', 'w');
-
-        $tasks = $this->getDoctrine()->getRepository(Task::class)->findAll();
-        
-        foreach ($tasks as $task)
-        {
-            $id = $task->getId();
-            $title = $task->getTitle();
-
-            $deadline = $task->getDeadline();
-            $date = $deadline->format('d-m-Y');
-
-            $user = $task->getUserId();
-            $userid = $user->getId();
-
-            $checked = $task->getChecked();
-
-            $array =[$id, $title, $date, $userid, $checked];
-            // dump($array);
-
-            fputcsv($file, $array);
-        }
-
-        fclose($file);
-
-        $email = (new Email())
-            ->from('hello@example.com')
-            ->to('you@example.com')
-            ->subject('Codzienny backup zadań')
-            ->html('<p>W załączniku spis wszystkich zadań znajdujących się w bazie danych.</p>')
-            ->attachFromPath('tasks.csv');
-
-        $mailer->send($email);
-
-
-        return new Response('Mail wysłany!');
     }
 }
