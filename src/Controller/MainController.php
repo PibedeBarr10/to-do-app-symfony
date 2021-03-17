@@ -14,17 +14,4 @@ class MainController extends AbstractController
     {
         return $this->render('home/index.html.twig');
     }
-
-    
-    /**
-     * @Route("/custom/{name}", name = "custom")
-     * @param Request $request
-     * @return Response
-     */
-    public function custom(Request $request) {
-        $name = $request->get(key: 'name');
-        return $this->render('home/custom.html.twig', [
-            'name' => $name
-        ]);
-    }
 }
