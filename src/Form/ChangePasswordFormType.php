@@ -18,6 +18,9 @@ class ChangePasswordFormType extends AbstractType
             ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'first_options' => [
+                    'attr' => [
+                        'class' => 'form-control'
+                    ],
                     'constraints' => [
                         new NotBlank([
                             'message' => 'Wpisz hasło',
@@ -33,6 +36,9 @@ class ChangePasswordFormType extends AbstractType
                 ],
                 'second_options' => [
                     'label' => 'Powtórz hasło',
+                    'attr' => [
+                        'class' => 'form-control'
+                    ]
                 ],
                 'invalid_message' => 'Oba pola muszą mieć takie same wartości.',
                 // Instead of being set onto the object directly,
