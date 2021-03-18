@@ -9,22 +9,22 @@
             {% if is_granted('IS_AUTHENTICATED_FULLY') %}
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a href="/task" class="nav-link">Zadania</a>
+                    <a href="{{ path('task.index') }}" class="nav-link">Zadania</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/task/create" class="nav-link">Nowe zadanie</a>
+                    <a href="{{ path('task.create') }}" class="nav-link">Nowe zadanie</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/logout" class="nav-link">Wyloguj się</a>
+                    <a href="{{ path('app_logout') }}" class="nav-link">Wyloguj się</a>
                 </li>
             </ul>
             {% else %}
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a href="/register" class="nav-link">Zarejestruj się</a>
+                    <a href="{{ path('register') }}" class="nav-link">Zarejestruj się</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/login" class="nav-link">Zaloguj się</a>
+                    <a href="{{ path('app_login') }}" class="nav-link">Zaloguj się</a>
                 </li>
             </ul>
             {% endif %}

@@ -4,12 +4,12 @@
 
 {% block body %}
 
-
+    {#
     {{ form_start(form) }}
     {{ form_widget(form) }}
     {{ form_end(form) }}
+    #}
 
-    {#
     <form method="post">
         <div>
             <label>Treść zadania:</label>
@@ -17,15 +17,15 @@
         </div>
         <div>
             <label>Ostateczny termin wykonania zadania:</label>
-            <input type="date" class="form-control" value="{{ task.deadline|date("d/m/Y") }}" name="deadline" required>
+            <input type="date" class="form-control" value="{{ task.deadline|date("Y-m-d") }}" name="deadline" required>
         </div>
         <div>
             <label>Czy zadanie zostało wykonane?</label>
-            <input type="checkbox" class="form-check" value="{{ task.checked }}" name="checked">
+            <input type="checkbox" class="form-check" value="{{ task.checked }}" {% if task.checked %}checked="checked"{% endif %} name="checked">
         </div>
         <div>
             <button type="submit" class="btn btn-primary mt-3">Edytuj zadanie</button>
         </div>
     </form>
-    #}
+
 {% endblock %}

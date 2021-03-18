@@ -17,12 +17,12 @@
         <tbody>
             {% for task in tasks %}
                 <tr>
-                    <td>{{ task.title }}</td>
+                    <td style="width: 30%">{{ task.title }}</td>
                     <td class='date'>{{ task.deadline|date("d/m/Y") }}</td>
                     <td class='notification' data-id={{ task.checked }}></td>
                     <td>
-                        <a href="/task/edit/{{ task.id }}" class="btn btn-dark">Edytuj</a>
-                        <a href="{{ path('task.delete', {task: task.id }) }}" class="btn btn-danger delete-task">Usuń</a>
+                        <a href="{{ path('task.edit', {id: task.id}) }}" class="btn btn-dark">Edytuj</a>
+                        <a href="#" data-id="{{ task.id }}" class="btn btn-danger delete-task">Usuń</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -35,28 +35,45 @@
 
 {% block javascripts %}
     <!--<script src="{{ asset('js/main.js') }}"></script>-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script>
+
+        const table = document.getElementById('table')
+
+        let id = 0;
+        if (table) {
+            table.addEventListener('click', e => {
+                if (e.target.className === 'btn btn-danger delete-task') {
+                    id = e.target.getAttribute('data-id')
+
+                    fetch(`/task/delete/` + id, {
+                        method: 'DELETE'
+                    }).then(res => window.location.reload())
+                }
+            })
+        }
+
         const dates = document.getElementsByClassName('date')
         const notifications = document.getElementsByClassName('notification')
         if (dates) {
-            var i = 0
+            let i = 0
             for (item of dates) {
                 if (notifications.item(i).getAttribute('data-id')) {
                     notifications.item(i).innerHTML = "Zadanie wykonane!"
                     notifications.item(i).style.color = "green"
                 } else {
-                    var n = check(item) // ilość dni
+                    let n = check(item) // ilość dni
                     
                     if (n < 0) {
                         notifications.item(i).innerHTML = "Po terminie!"
                         notifications.item(i).style.color = "red"
-                    } else if (n == 0) {
+                    } else if (n === 0) {
                         notifications.item(i).innerHTML = "Dzisiaj upływa czas na wykonanie zadania!"
                         notifications.item(i).style.color = "red"
-                    } else if (n == 1) {
+                    } else if (n === 1) {
                         notifications.item(i).innerHTML = "Tylko jeden dzień do końca!"
                         notifications.item(i).style.color = "red"
-                    } else if (n == 0 || (n > 1 && n < 3)) {
+                    } else if (n === 0 || (n > 1 && n < 3)) {
                         notifications.item(i).innerHTML = "Tylko " + n + " dni do końca!"
                         notifications.item(i).style.color = "red"
                     }
@@ -65,7 +82,7 @@
             }
         }
 
-        function check(item, index) {
+        function check(item) {
             var date1 = item.innerHTML
             date1 = date1.split("/")
             date1 = new Date(date1[1] + "/" + date1[0] + "/" + date1[2])
@@ -79,9 +96,8 @@
             console.log(date1)
 
             var Difference_In_Time = date1.getTime() - date2.getTime()
-            
-            var Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
-            return Difference_In_Days
+
+            return Math.round(Difference_In_Time / (1000 * 3600 * 24))
         }
     </script>
 {% endblock %}

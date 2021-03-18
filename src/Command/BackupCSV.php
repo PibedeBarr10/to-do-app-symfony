@@ -3,7 +3,6 @@
 namespace App\Command;
 
 use App\Entity\Task;
-use App\Controller\TaskController;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,7 +19,6 @@ class BackupCSV extends Command
     {
         parent::__construct();
         $this->mailer = $mailer;
-        $this->controller = new TaskController();
         $this->em = $em;
     }
 
@@ -49,21 +47,13 @@ class BackupCSV extends Command
         
         foreach ($tasks as $task)
         {
-            $id = $task->getId();
-            $title = $task->getTitle();
-
-            $deadline = $task->getDeadline();
-            $date = $deadline->format('d-m-Y');
-
-            $user = $task->getUserId();
-            $userid = $user->getId();
-
-            $checked = $task->getChecked();
-
-            $array =[$id, $title, $date, $userid, $checked];
-            // dump($array);
-
-            fputcsv($file, $array);
+            fputcsv($file, [
+                $task->getId(),
+                $task->getTitle(),
+                $task->getDeadline()->format('d-m-Y'),
+                $task->getUserId()->getId(),
+                $task->getChecked()
+            ]);
         }
 
         fclose($file);

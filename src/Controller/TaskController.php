@@ -4,11 +4,11 @@ namespace App\Controller;
 
 use App\Entity\Task;
 use App\Repository\TaskRepository;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Annotation\Route; // należy importować
 use Symfony\Component\HttpFoundation\Request;
-// use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -19,13 +19,22 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
  */
 class TaskController extends AbstractController
 {
-    #[Route('/', name: 'index')]
-    public function index(TaskRepository $taskRepository): Response
-    {
-        $user = $this->get('security.token_storage')->getToken()->getUser();
-        $id = $user->getId();
+    protected $taskRepository;
+    protected $userRepository;
 
-        $tasks = $taskRepository->findUserTasks($id);
+    public function __construct(TaskRepository $taskRepository, UserRepository $userRepository)
+    {
+        $this->taskRepository = $taskRepository;
+        $this->userRepository = $userRepository;
+    }
+
+    /**
+     * @Route("/", name = "index", methods={"GET"})
+     */
+    public function index(): Response
+    {
+        $userId = $this->getUser()->getId();
+        $tasks = $this->taskRepository->findUserTasks($userId);
 
         return $this->render('task/index.html.twig', [
             'tasks' => $tasks,
@@ -33,9 +42,9 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route("/create", name = "create")
+     * @Route("/create", name = "create", methods={"GET", "POST"})
      */
-    public function create(Request $request)
+    public function create(Request $request): Response
     {
         $task = new Task();
 
@@ -73,13 +82,10 @@ class TaskController extends AbstractController
         if($form->isSubmitted() && $form->isValid()) {
             $task = $form->getData();
 
-            $user = $this->get('security.token_storage')->getToken()->getUser();
+            $user = $this->getUser();
             $task -> setUserId($user);
 
-            // entity manager
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($task);
-            $em->flush();
+            $this->taskRepository->save($task);
 
             return $this->redirectToRoute('task.index');
         }
@@ -90,26 +96,32 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route("/delete/{task}", name = "delete")
+     * @Route("/delete/{id}", name = "delete", methods={"DELETE"})
      */
-    public function delete(Task $task)
+    public function delete(int $id): Response
     {
-        $em = $this->getDoctrine()->getManager();
+        $task = $this->taskRepository->find($id);
 
-        $em->remove($task);
-        $em->flush();
+        if ($this->getUser() !== $task->getUserId())
+        {
+            return new Response("Nie można usuwać nie swoich zadań");
+        }
+        $this->taskRepository->remove($task);
 
-        // return $this->redirect($this->generateUrl(route: 'task.index'));
-        return $this->redirectToRoute('task.index');
+        // return $this->redirectToRoute('task.index');
+        return new Response();
     }
 
     /**
-     * @Route("/edit/{id}", name = "edit")
+     * @Route("/edit/{id}", name = "edit", methods={"GET", "POST"})
      */
-    public function edit(Request $request, $id)
+    public function edit(Request $request, int $id): Response
     {
-        $task = new Task();
-        $task = $this->getDoctrine()->getRepository(Task::class)->find($id);
+        $task = $this->taskRepository->find($id);
+        if ($this->getUser() !== $task->getUserId())
+        {
+            return new Response("Nie można edytować nie swoich zadań");
+        }
 
         $form = $this->createFormBuilder($task)
             ->add('title', TextType::class, [
@@ -139,19 +151,61 @@ class TaskController extends AbstractController
                 ]
             ])
             ->getForm();
-        
+
+        // dump($form);
+        // $form = $request->query->all();
+
         $form->handleRequest($request);
+        dump($form);
+        dump($task);
 
         if($form->isSubmitted() && $form->isValid()) {
-
-            $em = $this->getDoctrine()->getManager();
-            $em->flush();
-
+            $this->taskRepository->update();
             return $this->redirectToRoute('task.index');
         }
 
         return $this->render('task/edit.html.twig', [
             'form' => $form->createView()
+        ]);
+    }
+
+
+
+
+    /**
+     * @Route("/editt/{id}", name = "editt", methods={"GET", "POST"})
+     */
+    public function editt(Request $request, int $id): Response
+    {
+        $task = $this->taskRepository->find($id);
+        if ($this->getUser() !== $task->getUserId())
+        {
+            return new Response("Nie można edytować nie swoich zadań");
+        }
+
+        if ($request->isMethod('POST'))
+        {
+            $title = $request->request->get('title');
+            $deadline = $request->request->get('deadline');
+            $checked = $request->request->get('checked');
+            // $form = $request->query->all();
+            // dump($form);
+
+            /*if($form->isSubmitted() && $form->isValid()) {
+                $this->taskRepository->update();
+                return $this->redirectToRoute('task.index');
+            }*/
+            return new Response("Witamy POST");
+        }
+
+
+        // $form->handleRequest($request);
+        // dump($form);
+        dump($task);
+
+
+        return $this->render('task/editt.html.twig', [
+            'task' => $task
         ]);
     }
 }
