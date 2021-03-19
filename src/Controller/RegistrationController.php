@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -15,6 +16,14 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class RegistrationController extends AbstractController
 {
+    protected UserRepository $userRepository;
+
+    public function __construct(UserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
+
     #[Route('/register', name: 'register')]
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
     {
@@ -52,22 +61,16 @@ class RegistrationController extends AbstractController
         if ($form -> isSubmitted() && $form -> isValid())
         {
             $data = $form -> getData();
-            $duplicate = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+            $duplicate = $this->userRepository->findOneBy(['email' => $data['email']]);
 
-            
-            if (is_object($duplicate)) {
-                // dump($duplicate);
-            } else {
+            if (!is_object($duplicate)) {
                 $user = new User();
                 $user -> setEmail($data['email']);
                 $user -> setPassword(
                     $passwordEncoder -> encodePassword($user, $data['password'])
                 );
-                
-                $em = $this->getDoctrine()->getManager();
 
-                $em -> persist($user);
-                $em -> flush();
+                $this->userRepository->save($user);
 
                 return $this->redirectToRoute('app_login');
             }

@@ -34,17 +34,16 @@
 {% endblock %}
 
 {% block javascripts %}
-    <!--<script src="{{ asset('js/main.js') }}"></script>-->
+    <script src="{{ asset('js/main.js') }}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script>
 
         const table = document.getElementById('table')
 
-        let id = 0;
         if (table) {
             table.addEventListener('click', e => {
                 if (e.target.className === 'btn btn-danger delete-task') {
-                    id = e.target.getAttribute('data-id')
+                    let id = e.target.getAttribute('data-id')
 
                     fetch(`/task/delete/` + id, {
                         method: 'DELETE'
@@ -57,47 +56,45 @@
         const notifications = document.getElementsByClassName('notification')
         if (dates) {
             let i = 0
-            for (item of dates) {
+            for (date of dates) {
                 if (notifications.item(i).getAttribute('data-id')) {
                     notifications.item(i).innerHTML = "Zadanie wykonane!"
                     notifications.item(i).style.color = "green"
                 } else {
-                    let n = check(item) // ilość dni
+                    let daysNumber = check(date) // ilość dni
                     
-                    if (n < 0) {
+                    if (daysNumber < 0) {
                         notifications.item(i).innerHTML = "Po terminie!"
-                        notifications.item(i).style.color = "red"
-                    } else if (n === 0) {
-                        notifications.item(i).innerHTML = "Dzisiaj upływa czas na wykonanie zadania!"
-                        notifications.item(i).style.color = "red"
-                    } else if (n === 1) {
-                        notifications.item(i).innerHTML = "Tylko jeden dzień do końca!"
-                        notifications.item(i).style.color = "red"
-                    } else if (n === 0 || (n > 1 && n < 3)) {
-                        notifications.item(i).innerHTML = "Tylko " + n + " dni do końca!"
-                        notifications.item(i).style.color = "red"
                     }
+                    if (daysNumber === 0) {
+                        notifications.item(i).innerHTML = "Dzisiaj upływa czas na wykonanie zadania!"
+                    }
+                    if (daysNumber === 1) {
+                        notifications.item(i).innerHTML = "Tylko jeden dzień do końca!"
+                    }
+                    if (daysNumber > 1 && daysNumber <= 3) {
+                        notifications.item(i).innerHTML = "Tylko " + daysNumber + " dni do końca!"
+                    }
+                    notifications.item(i).style.color = "red"
                 }
                 i++
             }
         }
 
-        function check(item) {
-            var date1 = item.innerHTML
+        function check(date) {
+            let date1 = date.innerHTML
             date1 = date1.split("/")
             date1 = new Date(date1[1] + "/" + date1[0] + "/" + date1[2])
             
-            var date2 = new Date()
+            let date2 = new Date()
             date2.setHours(0)
             date2.setMinutes(0)
             date2.setSeconds(0)
             date2.setMilliseconds(0)
-            console.log(date2)
-            console.log(date1)
 
-            var Difference_In_Time = date1.getTime() - date2.getTime()
+            let timeBetweenDates = date1.getTime() - date2.getTime()
 
-            return Math.round(Difference_In_Time / (1000 * 3600 * 24))
+            return Math.round(timeBetweenDates / (1000 * 3600 * 24))
         }
     </script>
 {% endblock %}

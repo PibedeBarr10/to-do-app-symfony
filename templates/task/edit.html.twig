@@ -3,29 +3,7 @@
 {% block title %}Edytuj zadanie{% endblock %}
 
 {% block body %}
-
-
     {{ form_start(form) }}
     {{ form_widget(form) }}
     {{ form_end(form) }}
-
-    {#
-    <form method="post">
-        <div>
-            <label>Treść zadania:</label>
-            <input type="text" class="form-control" value="{{ task.title }}" name="title" required>
-        </div>
-        <div>
-            <label>Ostateczny termin wykonania zadania:</label>
-            <input type="date" class="form-control" value="{{ task.deadline|date("d/m/Y") }}" name="deadline" required>
-        </div>
-        <div>
-            <label>Czy zadanie zostało wykonane?</label>
-            <input type="checkbox" class="form-check" value="{{ task.checked }}" name="checked">
-        </div>
-        <div>
-            <button type="submit" class="btn btn-primary mt-3">Edytuj zadanie</button>
-        </div>
-    </form>
-    #}
 {% endblock %}
