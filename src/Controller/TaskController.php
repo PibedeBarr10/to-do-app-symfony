@@ -2,16 +2,14 @@
 
 namespace App\Controller;
 
-use App\Entity\Task;
 use App\Form\TaskCreateFormType;
 use App\Form\TaskEditFormType;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
-use DateTime;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route; // należy importować
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -22,7 +20,10 @@ class TaskController extends AbstractController
     protected TaskRepository $taskRepository;
     protected UserRepository $userRepository;
 
-    public function __construct(TaskRepository $taskRepository, UserRepository $userRepository)
+    public function __construct(
+        TaskRepository $taskRepository,
+        UserRepository $userRepository
+    )
     {
         $this->taskRepository = $taskRepository;
         $this->userRepository = $userRepository;
@@ -49,9 +50,7 @@ class TaskController extends AbstractController
      */
     public function create(Request $request): Response
     {
-        $task = new Task();
-
-        $form = $this->createForm(TaskCreateFormType::class, $task);
+        $form = $this->createForm(TaskCreateFormType::class);
 
         $form->handleRequest($request);
 
@@ -78,7 +77,10 @@ class TaskController extends AbstractController
      * @return Response
      * @throws Exception
      */
-    public function edit(Request $request, int $id): Response
+    public function edit(
+        Request $request,
+        int $id
+    ): Response
     {
         $task = $this->taskRepository->find($id);
 
@@ -88,8 +90,6 @@ class TaskController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid())
         {
-            $taskData = $form->getData();
-
             $this->taskRepository->update();
             return $this->redirectToRoute('task.index');
         }
@@ -108,13 +108,10 @@ class TaskController extends AbstractController
     {
         $task = $this->taskRepository->find($id);
 
-        if ($this->getUser() !== $task->getUserId())
+        if ($task && $this->getUser() === $task->getUserId())
         {
-            return new Response("Nie można usuwać nie swoich zadań");
+            $this->taskRepository->remove($task);
         }
-        $this->taskRepository->remove($task);
-
-        // return $this->redirectToRoute('task.index');
         return new Response();
     }
 }

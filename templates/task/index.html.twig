@@ -19,7 +19,7 @@
                 <tr>
                     <td style="width: 30%">{{ task.title }}</td>
                     <td class='date'>{{ task.deadline|date("d/m/Y") }}</td>
-                    <td class='notification' data-id={{ task.checked }}></td>
+                    <td class='status' data-id={{ task.checked }}></td>
                     <td>
                         <a href="{{ path('task.edit', {id: task.id}) }}" class="btn btn-dark">Edytuj</a>
                         <a href="#" data-id="{{ task.id }}" class="btn btn-danger delete-task">Usuń</a>
@@ -34,10 +34,7 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script src="{{ asset('js/main.js') }}"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script>
-
         const table = document.getElementById('table')
 
         if (table) {
@@ -53,29 +50,29 @@
         }
 
         const dates = document.getElementsByClassName('date')
-        const notifications = document.getElementsByClassName('notification')
+        const status = document.getElementsByClassName('status')
         if (dates) {
             let i = 0
             for (date of dates) {
-                if (notifications.item(i).getAttribute('data-id')) {
-                    notifications.item(i).innerHTML = "Zadanie wykonane!"
-                    notifications.item(i).style.color = "green"
+                if (status.item(i).getAttribute('data-id')) {
+                    status.item(i).innerHTML = "Zadanie wykonane!"
+                    status.item(i).style.color = "green"
                 } else {
-                    let daysNumber = check(date) // ilość dni
+                    let daysNumber = check(date)
                     
                     if (daysNumber < 0) {
-                        notifications.item(i).innerHTML = "Po terminie!"
+                        status.item(i).innerHTML = "Po terminie!"
                     }
                     if (daysNumber === 0) {
-                        notifications.item(i).innerHTML = "Dzisiaj upływa czas na wykonanie zadania!"
+                        status.item(i).innerHTML = "Dzisiaj upływa czas na wykonanie zadania!"
                     }
                     if (daysNumber === 1) {
-                        notifications.item(i).innerHTML = "Tylko jeden dzień do końca!"
+                        status.item(i).innerHTML = "Tylko jeden dzień do końca!"
                     }
                     if (daysNumber > 1 && daysNumber <= 3) {
-                        notifications.item(i).innerHTML = "Tylko " + daysNumber + " dni do końca!"
+                        status.item(i).innerHTML = "Tylko " + daysNumber + " dni do końca!"
                     }
-                    notifications.item(i).style.color = "red"
+                    status.item(i).style.color = "red"
                 }
                 i++
             }

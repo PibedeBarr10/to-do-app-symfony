@@ -38,13 +38,12 @@ class TaskRepository extends ServiceEntityRepository
 
     public function findUserTasks(int $id)
     {
-        $query = $this->getEntityManager()
-            ->createQuery(
-                'SELECT t FROM App:Task t
-                JOIN t.user_id u
-                WHERE t.user_id = :id'
-            )->setParameter('id', $id);
-        
-        return $query->getResult();
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->select('t')
+            ->from('App:Task', 't')
+            ->where('t.user_id = :id')
+            ->setParameter('id', $id)
+        ;
+        return $qb->getQuery()->getResult();
     }
 }

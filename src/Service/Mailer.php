@@ -3,7 +3,7 @@
 
 namespace App\Service;
 
-use Symfony\Component\Mime\Email;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\MailerInterface;
 
 class Mailer
@@ -19,15 +19,15 @@ class Mailer
         string $from,
         string $to,
         string $subject,
-        string $html,
+        string $htmlTemplate,
         string $pathToFile = null
     ): void
     {
-        $email = (new Email())
+        $email = (new TemplatedEmail())
             ->from($from)
             ->to($to)
             ->subject($subject)
-            ->html($html);
+            ->htmlTemplate($htmlTemplate);
 
         if (isset($pathToFile))
         {

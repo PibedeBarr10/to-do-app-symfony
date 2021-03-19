@@ -4,5 +4,7 @@
 
 {% block body %}
     <h1 class="h3 mb-3 font-weight-normal">Rejestracja</h1>
-    {{ form(form) }}
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
 {% endblock %}
