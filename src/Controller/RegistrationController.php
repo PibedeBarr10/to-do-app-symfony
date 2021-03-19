@@ -3,11 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Form\RegistrationFormType;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -15,60 +13,38 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class RegistrationController extends AbstractController
 {
-    #[Route('/register', name: 'register')]
+    protected UserRepository $userRepository;
+
+    public function __construct(UserRepository $userRepository)
+    {
+        $this->userRepository = $userRepository;
+    }
+
+    /**
+     * @Route("/register", name = "register", methods={"GET", "POST"})
+     * @param Request $request
+     * @param UserPasswordEncoderInterface $passwordEncoder
+     * @return Response
+     */
     public function register(Request $request, UserPasswordEncoderInterface $passwordEncoder): Response
     {
-        $form = $this->createFormBuilder()
-            ->add('email', EmailType::class, [
-                'required' => true,
-                'attr' => ['class' => 'form-control']
-            ])
-            ->add('password', RepeatedType::class, [
-                'type' => PasswordType::class,
-                'invalid_message' => 'Hasła muszą być takie same',
-                'options' => [
-                    'attr' => ['class' => 'password-field']
-                ],
-                'required' => true,
-                'first_options' => [
-                    'label' => 'Hasło:',
-                    'attr' => ['class' => 'form-control']
-                ],
-                'second_options' => [
-                    'label' => 'Powtórz hasło:',
-                    'attr' => ['class' => 'form-control']
-                ]
-            ])
-            ->add('register', SubmitType::class, [
-                'label' => 'Zarejestruj się',
-                'attr' =>[
-                    'class' => 'btn btn-primary mt-3'
-                ]
-            ])
-            ->getForm();
+        $user = new User();
+
+        $form = $this->createForm(RegistrationFormType::class, $user);
         
         $form -> handleRequest($request);
 
         if ($form -> isSubmitted() && $form -> isValid())
         {
-            $data = $form -> getData();
-            $duplicate = $this->getDoctrine()->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+            $dataForm = $form -> getData();
+            $duplicate = $this->userRepository->findOneBy(['email' => $dataForm->getEmail()]);
 
-            
-            if (is_object($duplicate)) {
-                // dump($duplicate);
-            } else {
-                $user = new User();
-                $user -> setEmail($data['email']);
+            if (!is_object($duplicate)) {
                 $user -> setPassword(
-                    $passwordEncoder -> encodePassword($user, $data['password'])
+                    $passwordEncoder -> encodePassword($user, $dataForm->getPassword())
                 );
-                
-                $em = $this->getDoctrine()->getManager();
 
-                $em -> persist($user);
-                $em -> flush();
-
+                $this->userRepository->save($user);
                 return $this->redirectToRoute('app_login');
             }
         }

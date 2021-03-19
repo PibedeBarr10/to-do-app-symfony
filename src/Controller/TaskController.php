@@ -2,30 +2,40 @@
 
 namespace App\Controller;
 
-use App\Entity\Task;
+use App\Form\TaskCreateFormType;
+use App\Form\TaskEditFormType;
 use App\Repository\TaskRepository;
+use App\Repository\UserRepository;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
-// use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 
 /**
  * @Route("/task", name = "task.")
  */
 class TaskController extends AbstractController
 {
-    #[Route('/', name: 'index')]
-    public function index(TaskRepository $taskRepository): Response
-    {
-        $user = $this->get('security.token_storage')->getToken()->getUser();
-        $id = $user->getId();
+    protected TaskRepository $taskRepository;
+    protected UserRepository $userRepository;
 
-        $tasks = $taskRepository->findUserTasks($id);
+    public function __construct(
+        TaskRepository $taskRepository,
+        UserRepository $userRepository
+    )
+    {
+        $this->taskRepository = $taskRepository;
+        $this->userRepository = $userRepository;
+    }
+
+    /**
+     * @Route("/", name = "index", methods={"GET"})
+     */
+    public function index(): Response
+    {
+        $userId = $this->getUser()->getId();
+        $tasks = $this->taskRepository->findUserTasks($userId);
 
         return $this->render('task/index.html.twig', [
             'tasks' => $tasks,
@@ -33,54 +43,25 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route("/create", name = "create")
+     * @Route("/create", name = "create", methods={"GET", "POST"})
+     * @param Request $request
+     * @return Response
+     * @throws Exception
      */
-    public function create(Request $request)
+    public function create(Request $request): Response
     {
-        $task = new Task();
+        $form = $this->createForm(TaskCreateFormType::class);
 
-        $form = $this->createFormBuilder($task)
-            ->add('title', TextType::class, [
-                'label' => 'Treść zadania:',
-                'attr' => [
-                    'class' => 'form-control'
-                ]
-            ])
-            ->add('deadline', DateType::class, [
-                'label' => 'Ostateczny termin wykonania zadania:',
-                'widget' => 'single_text',
-                'attr' => [
-                    'class' => 'form-control'
-                ]
-            ])
-            ->add('checked', CheckboxType::class, [
-                'label' => 'Czy zadanie zostało wykonane?',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-check'
-                ]
-            ])
-            ->add('save', SubmitType::class, [
-                'label' => 'Dodaj zadanie',
-                'attr' =>[
-                    'class' => 'btn btn-primary mt-3'
-                ]
-            ])
-            ->getForm();
-        
         $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid()) {
-            $task = $form->getData();
+        if ($form->isSubmitted() && $form->isValid())
+        {
+            $taskData = $form->getData();
 
-            $user = $this->get('security.token_storage')->getToken()->getUser();
-            $task -> setUserId($user);
+            $user = $this->getUser();
+            $taskData -> setUserId($user);
 
-            // entity manager
-            $em = $this->getDoctrine()->getManager();
-            $em->persist($task);
-            $em->flush();
-
+            $this->taskRepository->save($taskData);
             return $this->redirectToRoute('task.index');
         }
 
@@ -90,68 +71,47 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route("/delete/{task}", name = "delete")
+     * @Route("/edit/{id}", name = "edit", methods={"GET", "POST"})
+     * @param Request $request
+     * @param int $id
+     * @return Response
+     * @throws Exception
      */
-    public function delete(Task $task)
+    public function edit(
+        Request $request,
+        int $id
+    ): Response
     {
-        $em = $this->getDoctrine()->getManager();
+        $task = $this->taskRepository->find($id);
 
-        $em->remove($task);
-        $em->flush();
+        $form = $this->createForm(TaskEditFormType::class, $task);
 
-        // return $this->redirect($this->generateUrl(route: 'task.index'));
-        return $this->redirectToRoute('task.index');
-    }
-
-    /**
-     * @Route("/edit/{id}", name = "edit")
-     */
-    public function edit(Request $request, $id)
-    {
-        $task = new Task();
-        $task = $this->getDoctrine()->getRepository(Task::class)->find($id);
-
-        $form = $this->createFormBuilder($task)
-            ->add('title', TextType::class, [
-                'label' => 'Treść zadania:',
-                'attr' => [
-                    'class' => 'form-control'
-                ]
-            ])
-            ->add('deadline', DateType::class, [
-                'label' => 'Ostateczny termin wykonania zadania:',
-                'widget' => 'single_text',
-                'attr' => [
-                    'class' => 'form-control'
-                ]
-            ])
-            ->add('checked', CheckboxType::class, [
-                'label' => 'Czy zadanie zostało wykonane?',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-check'
-                ]
-            ])
-            ->add('save', SubmitType::class, [
-                'label' => 'Edytuj zadanie',
-                'attr' =>[
-                    'class' => 'btn btn-primary mt-3'
-                ]
-            ])
-            ->getForm();
-        
         $form->handleRequest($request);
 
-        if($form->isSubmitted() && $form->isValid()) {
-
-            $em = $this->getDoctrine()->getManager();
-            $em->flush();
-
+        if ($form->isSubmitted() && $form->isValid())
+        {
+            $this->taskRepository->update();
             return $this->redirectToRoute('task.index');
         }
 
         return $this->render('task/edit.html.twig', [
             'form' => $form->createView()
         ]);
+    }
+
+    /**
+     * @Route("/delete/{id}", name = "delete", methods={"DELETE"})
+     * @param int $id
+     * @return Response
+     */
+    public function delete(int $id): Response
+    {
+        $task = $this->taskRepository->find($id);
+
+        if ($task && $this->getUser() === $task->getUserId())
+        {
+            $this->taskRepository->remove($task);
+        }
+        return new Response();
     }
 }

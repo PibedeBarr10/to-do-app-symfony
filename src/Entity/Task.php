@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Repository\TaskRepository;
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -15,7 +15,7 @@ class Task
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -30,7 +30,7 @@ class Task
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="task")
      */
-    private $user_id;
+    private ?User $user_id;
 
     /**
      * @ORM\Column(type="boolean")
@@ -54,12 +54,12 @@ class Task
         return $this;
     }
 
-    public function getDeadline(): ?\DateTimeInterface
+    public function getDeadline(): ?DateTimeInterface
     {
         return $this->deadline;
     }
 
-    public function setDeadline(\DateTimeInterface $deadline): self
+    public function setDeadline(DateTimeInterface $deadline): self
     {
         $this->deadline = $deadline;
 

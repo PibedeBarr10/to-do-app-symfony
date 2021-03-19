@@ -19,56 +19,31 @@ class TaskRepository extends ServiceEntityRepository
         parent::__construct($registry, Task::class);
     }
 
+    public function save(Task $task)
+    {
+        $this->_em->persist($task);
+        $this->_em->flush();
+    }
+
+    public function remove(Task $task)
+    {
+        $this->_em->remove($task);
+        $this->_em->flush();
+    }
+
+    public function update()
+    {
+        $this->_em->flush();
+    }
 
     public function findUserTasks(int $id)
     {
-        $query = $this->getEntityManager()
-            ->createQuery(
-                'SELECT t FROM App:Task t
-                JOIN t.user_id u
-                WHERE t.user_id = :id'
-            )->setParameter('id', $id);
-        
-        return $query->getResult();
-        /*
-        $qb = $this -> createQueryBuilder(alias:'t');
-        $qb -> select(select:'t.title')
-            -> addSelect(select:'t.deadline')
-            // -> addSelect(select:'u.id')
-            -> innerJoin(join:'t.user_id', alias:'u')
-            -> where(predicates:'t.id = :id')
-            -> setParameter('id', $id)
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->select('t')
+            ->from('App:Task', 't')
+            ->where('t.user_id = :id')
+            ->setParameter('id', $id)
         ;
         return $qb->getQuery()->getResult();
-        */
     }
-
-    // /**
-    //  * @return Task[] Returns an array of Task objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('t.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Task
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

@@ -17,12 +17,12 @@
         <tbody>
             {% for task in tasks %}
                 <tr>
-                    <td>{{ task.title }}</td>
+                    <td style="width: 30%">{{ task.title }}</td>
                     <td class='date'>{{ task.deadline|date("d/m/Y") }}</td>
-                    <td class='notification' data-id={{ task.checked }}></td>
+                    <td class='status' data-id={{ task.checked }}></td>
                     <td>
-                        <a href="/task/edit/{{ task.id }}" class="btn btn-dark">Edytuj</a>
-                        <a href="{{ path('task.delete', {task: task.id }) }}" class="btn btn-danger delete-task">Usuń</a>
+                        <a href="{{ path('task.edit', {id: task.id}) }}" class="btn btn-dark">Edytuj</a>
+                        <a href="#" data-id="{{ task.id }}" class="btn btn-danger delete-task">Usuń</a>
                     </td>
                 </tr>
             {% endfor %}
@@ -34,55 +34,64 @@
 {% endblock %}
 
 {% block javascripts %}
-    <!--<script src="{{ asset('js/main.js') }}"></script>-->
     <script>
-        const dates = document.getElementsByClassName('date')
-        const notifications = document.getElementsByClassName('notification')
-        if (dates) {
-            var i = 0
-            for (item of dates) {
-                if (notifications.item(i).getAttribute('data-id')) {
-                    notifications.item(i).innerHTML = "Zadanie wykonane!"
-                    notifications.item(i).style.color = "green"
-                } else {
-                    var n = check(item) // ilość dni
-                    
-                    if (n < 0) {
-                        notifications.item(i).innerHTML = "Po terminie!"
-                        notifications.item(i).style.color = "red"
-                    } else if (n == 0) {
-                        notifications.item(i).innerHTML = "Dzisiaj upływa czas na wykonanie zadania!"
-                        notifications.item(i).style.color = "red"
-                    } else if (n == 1) {
-                        notifications.item(i).innerHTML = "Tylko jeden dzień do końca!"
-                        notifications.item(i).style.color = "red"
-                    } else if (n == 0 || (n > 1 && n < 3)) {
-                        notifications.item(i).innerHTML = "Tylko " + n + " dni do końca!"
-                        notifications.item(i).style.color = "red"
-                    }
+        const table = document.getElementById('table')
+
+        if (table) {
+            table.addEventListener('click', e => {
+                if (e.target.className === 'btn btn-danger delete-task') {
+                    let id = e.target.getAttribute('data-id')
+
+                    fetch(`/task/delete/` + id, {
+                        method: 'DELETE'
+                    }).then(res => window.location.reload())
                 }
-                
+            })
+        }
+
+        const dates = document.getElementsByClassName('date')
+        const status = document.getElementsByClassName('status')
+        if (dates) {
+            let i = 0
+            for (date of dates) {
+                if (status.item(i).getAttribute('data-id')) {
+                    status.item(i).innerHTML = "Zadanie wykonane!"
+                    status.item(i).style.color = "green"
+                } else {
+                    let daysNumber = check(date)
+                    
+                    if (daysNumber < 0) {
+                        status.item(i).innerHTML = "Po terminie!"
+                    }
+                    if (daysNumber === 0) {
+                        status.item(i).innerHTML = "Dzisiaj upływa czas na wykonanie zadania!"
+                    }
+                    if (daysNumber === 1) {
+                        status.item(i).innerHTML = "Tylko jeden dzień do końca!"
+                    }
+                    if (daysNumber > 1 && daysNumber <= 3) {
+                        status.item(i).innerHTML = "Tylko " + daysNumber + " dni do końca!"
+                    }
+                    status.item(i).style.color = "red"
+                }
                 i++
             }
         }
 
-        function check(item, index) {
-            var date1 = item.innerHTML
+        function check(date) {
+            let date1 = date.innerHTML
             date1 = date1.split("/")
             date1 = new Date(date1[1] + "/" + date1[0] + "/" + date1[2])
             
-            var date2 = new Date()
+            let date2 = new Date()
             date2.setHours(0)
             date2.setMinutes(0)
             date2.setSeconds(0)
             date2.setMilliseconds(0)
-            console.log(date2)
-            console.log(date1)
 
-            var Difference_In_Time = date1.getTime() - date2.getTime()
-            
-            var Difference_In_Days = Math.round(Difference_In_Time / (1000 * 3600 * 24))
-            return Difference_In_Days
+            let timeBetweenDates = date1.getTime() - date2.getTime()
+
+            return Math.round(timeBetweenDates / (1000 * 3600 * 24))
         }
     </script>
 {% endblock %}

@@ -2,26 +2,23 @@
 
 namespace App\Command;
 
-use App\Entity\Task;
-use App\Controller\TaskController;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\Mailer;
+use App\Repository\TaskRepository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
-
 class BackupCSV extends Command
 {
-    protected static $defaultName = 'app:sendCSV';
+    protected static $defaultName = 'app:sendBackup';
+    protected TaskRepository $taskRepository;
+    protected Mailer $mailer;
 
-    public function __construct(MailerInterface $mailer, EntityManagerInterface $em)
+    public function __construct(TaskRepository $taskRepository, Mailer $mailer)
     {
         parent::__construct();
+        $this->taskRepository = $taskRepository;
         $this->mailer = $mailer;
-        $this->controller = new TaskController();
-        $this->em = $em;
     }
 
     protected function configure()
@@ -30,51 +27,42 @@ class BackupCSV extends Command
         ->setHelp('This command sends email with all tasks from database');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(
+        InputInterface $input,
+        OutputInterface $output
+    ): int
     {
-        $this->sendCSV($this->mailer);
+        $this->sendCSV();
 
         $message = sprintf("Mail wysłany");
 
         $output->writeln($message);
-        return 0;   // Return value of "App\Command\BackupCSV::execute()" must be of the type int, "null" returned.
+        return 0;
     }
 
-    public function sendCSV(MailerInterface $mailer)
+    public function sendCSV(): void
     {
         $file = fopen('tasks.csv', 'w');
+        $tasks = $this->taskRepository->findAll();
 
-        $repository = $this->em->getRepository(Task::class);
-        $tasks = $repository->findAll();
-        
         foreach ($tasks as $task)
         {
-            $id = $task->getId();
-            $title = $task->getTitle();
-
-            $deadline = $task->getDeadline();
-            $date = $deadline->format('d-m-Y');
-
-            $user = $task->getUserId();
-            $userid = $user->getId();
-
-            $checked = $task->getChecked();
-
-            $array =[$id, $title, $date, $userid, $checked];
-            // dump($array);
-
-            fputcsv($file, $array);
+            fputcsv($file, [
+                $task->getId(),
+                $task->getTitle(),
+                $task->getDeadline()->format('d-m-Y'),
+                $task->getUserId()->getId(),
+                $task->getChecked()
+            ]);
         }
 
         fclose($file);
-
-        $email = (new Email())
-            ->from('hello@example.com')
-            ->to('you@example.com')
-            ->subject('Codzienny backup zadań')
-            ->html('<p>W załączniku spis wszystkich zadań znajdujących się w bazie danych.</p>')
-            ->attachFromPath('tasks.csv');
-
-        $mailer->send($email);
+        $this->mailer->sendMail(
+            'hello@example.com',
+            'you@example.com',
+            'Codzienny backup zadań',
+            'command/backup.html.twig',
+            'tasks.csv'
+        );
     }
 }
