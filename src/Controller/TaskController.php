@@ -2,35 +2,41 @@
 
 namespace App\Controller;
 
+use App\Entity\Task;
 use App\Form\TaskCreateFormType;
 use App\Form\TaskEditFormType;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
+use App\Service\FileManagement;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
- * @Route("/task", name = "task.")
+ * @Route("/task", name="task.")
  */
 class TaskController extends AbstractController
 {
-    protected TaskRepository $taskRepository;
-    protected UserRepository $userRepository;
+    private TaskRepository $taskRepository;
+    private UserRepository $userRepository;
+    private FileManagement $fileManagement;
 
     public function __construct(
         TaskRepository $taskRepository,
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        FileManagement $fileManagement
     )
     {
         $this->taskRepository = $taskRepository;
         $this->userRepository = $userRepository;
+        $this->fileManagement = $fileManagement;
     }
 
     /**
-     * @Route("/", name = "index", methods={"GET"})
+     * @Route("/", name="index", methods={"GET"})
      */
     public function index(): Response
     {
@@ -43,25 +49,31 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route("/create", name = "create", methods={"GET", "POST"})
-     * @param Request $request
-     * @return Response
-     * @throws Exception
+     * @Route("/create", name="create", methods={"GET", "POST"})
      */
     public function create(Request $request): Response
     {
-        $form = $this->createForm(TaskCreateFormType::class);
+        $task = new Task();
+
+        $form = $this->createForm(TaskCreateFormType::class, $task);
 
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid())
-        {
-            $taskData = $form->getData();
+        if ($form->isSubmitted() && $form->isValid()) {
 
             $user = $this->getUser();
-            $taskData -> setUserId($user);
+            $task -> setUserId($user);
 
-            $this->taskRepository->save($taskData);
+            $this->taskRepository->save($task);
+
+            $file = $form->get('attachment')->getData();
+            $id = $task->getId();
+            if ($file) {
+                $originalFilename = $this->fileManagement->upload($id, $file);
+                $task->setAttachment($originalFilename);
+            }
+
+            $this->taskRepository->update();
             return $this->redirectToRoute('task.index');
         }
 
@@ -71,16 +83,9 @@ class TaskController extends AbstractController
     }
 
     /**
-     * @Route("/edit/{id}", name = "edit", methods={"GET", "POST"})
-     * @param Request $request
-     * @param int $id
-     * @return Response
-     * @throws Exception
+     * @Route("/edit/{id}", name="edit", methods={"GET", "POST"})
      */
-    public function edit(
-        Request $request,
-        int $id
-    ): Response
+    public function edit(Request $request, int $id): Response
     {
         $task = $this->taskRepository->find($id);
 
@@ -90,28 +95,65 @@ class TaskController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid())
         {
+            $file = $form->get('attachment')->getData();
+            if ($file) {
+                $originalFilename = $this->fileManagement->upload($id, $file);
+                $task->setAttachment($originalFilename);
+            }
+
             $this->taskRepository->update();
             return $this->redirectToRoute('task.index');
         }
 
         return $this->render('task/edit.html.twig', [
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'task' => $task
         ]);
     }
 
     /**
-     * @Route("/delete/{id}", name = "delete", methods={"DELETE"})
-     * @param int $id
-     * @return Response
+     * @Route("/delete/{id}", name="delete", methods={"DELETE"})
      */
     public function delete(int $id): Response
     {
         $task = $this->taskRepository->find($id);
 
-        if ($task && $this->getUser() === $task->getUserId())
-        {
-            $this->taskRepository->remove($task);
+        if (!$task) {
+            $this->addFlash('danger', 'Nie znaleziono takiego zadania');
         }
-        return new Response();
+
+        if ($this->getUser() !== $task->getUserId())
+        {
+            $this->addFlash('danger', 'Nie jesteś właścicielem tego zadania');
+        }
+
+        $this->delete_file($id);
+        $this->taskRepository->remove($task);
+        return $this->redirectToRoute('task.index');
+    }
+
+    /**
+     * @Route("/download/{id}/{filename}", name="download", methods={"GET"})
+     */
+    public function download(int $id, string $filename): Response
+    {
+        $path = $this->getParameter('uploads_dir');
+        $file = new File($path . $id.'/'. $filename);
+
+        return $this->file($file);
+    }
+
+    /**
+     * @Route("/delete_file/{id}", name="delete_file", methods={"DELETE"})
+     */
+    public function delete_file(int $id): Response
+    {
+        $task = $this->taskRepository->find($id);
+        $task->setAttachment(null);
+
+        $this->taskRepository->update();
+        $this->fileManagement->delete($id);
+
+        return $this->redirectToRoute('task.index');
     }
 }
