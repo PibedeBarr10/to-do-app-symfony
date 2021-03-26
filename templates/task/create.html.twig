@@ -4,6 +4,13 @@
 
 {% block body %}
     {{ form_start(form) }}
-    {{ form_widget(form) }}
+
+    {{ form_row(form.title) }}
+    {{ form_row(form.deadline) }}
+    {{ form_row(form.checked) }}
+
+    {{ form_row(form.attachment) }}
+    {{ form_row(form.save) }}
+
     {{ form_end(form) }}
 {% endblock %}

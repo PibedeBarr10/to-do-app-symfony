@@ -11,8 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class BackupCSV extends Command
 {
     protected static $defaultName = 'app:sendBackup';
-    protected TaskRepository $taskRepository;
-    protected Mailer $mailer;
+    private TaskRepository $taskRepository;
+    private Mailer $mailer;
 
     public function __construct(TaskRepository $taskRepository, Mailer $mailer)
     {
@@ -27,10 +27,7 @@ class BackupCSV extends Command
         ->setHelp('This command sends email with all tasks from database');
     }
 
-    protected function execute(
-        InputInterface $input,
-        OutputInterface $output
-    ): int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->sendCSV();
 

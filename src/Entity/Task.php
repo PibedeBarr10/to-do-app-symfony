@@ -37,6 +37,11 @@ class Task
      */
     private $checked;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $attachment;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -86,6 +91,18 @@ class Task
     public function setChecked(bool $checked): self
     {
         $this->checked = $checked;
+
+        return $this;
+    }
+
+    public function getAttachment(): ?string
+    {
+        return $this->attachment;
+    }
+
+    public function setAttachment(?string $attachment): self
+    {
+        $this->attachment = $attachment;
 
         return $this;
     }

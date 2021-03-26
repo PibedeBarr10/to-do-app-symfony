@@ -3,6 +3,14 @@
 {% block title %}Twoje zadania{% endblock %}
 
 {% block body %}
+    {% for label, messages in app.flashes(['danger', 'success']) %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
     {% if tasks %}
     <h1>Twoje zadania:</h1>
     <table id='table' class="table table-striped">

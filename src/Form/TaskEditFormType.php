@@ -6,10 +6,12 @@ use App\Entity\Task;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class TaskEditFormType extends AbstractType
 {
@@ -34,6 +36,25 @@ class TaskEditFormType extends AbstractType
                 'required' => false,
                 'attr' => [
                     'class' => 'form-check'
+                ]
+            ])
+            ->add('attachment', FileType::class, [
+                'mapped' => false,
+                'required' => false,
+                'label' => 'Załącznik:',
+                'attr' => [
+                    'class' => 'form-control-file',
+                    'type' => 'file'
+                ],
+                'constraints' => [
+                    new File([
+                        'mimeTypes' => [
+                            'application/pdf',
+                            'application/msword',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                        ],
+                        'mimeTypesMessage' => 'Możliwe typy plików: PDF, DOC i DOCX',
+                    ])
                 ]
             ])
             ->add('save', SubmitType::class, [

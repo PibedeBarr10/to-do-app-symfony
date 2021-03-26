@@ -3,5 +3,14 @@
 {% block title %}To-Do App{% endblock %}
 
 {% block body %}
+    {% for label, messages in app.flashes(['error', 'success']) %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
     <h1>Witamy w aplikacji To-Do App!</h1>
+    <a href="{{ path('invite') }}">Zaproś znajomego</a>
 {% endblock %}

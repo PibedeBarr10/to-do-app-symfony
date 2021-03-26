@@ -3,7 +3,49 @@
 {% block title %}Edytuj zadanie{% endblock %}
 
 {% block body %}
+    {% for label, messages in app.flashes(['danger', 'success']) %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
     {{ form_start(form) }}
-    {{ form_widget(form) }}
+
+    {{ form_row(form.title) }}
+    {{ form_row(form.deadline) }}
+    {{ form_row(form.checked) }}
+
+    {% if task.attachment %}
+        {{ form_row(form.attachment, {'attr': {'class': 'invisible'}}) }}
+        <div class="d-flex justify-content-between">
+            <a href="{{ path('task.download', {id: task.id, filename: task.attachment}) }}" class="btn btn-info">{{ task.attachment }}</a>
+            <div class="float-right">
+                <a href="{{ path('task.rename_file', {id: task.id, filename: task.attachment}) }}" class="btn btn-dark">Zmień nazwę</a>
+                <a href="#" id="delete" data-id="{{ task.id }}" class="btn btn-danger delete-task">Usuń</a>
+            </div>
+        </div>
+    {% else %}
+        {{ form_row(form.attachment) }}
+    {% endif %}
+
+    {{ form_row(form.save) }}
     {{ form_end(form) }}
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        const delete_btn = document.getElementById('delete')
+
+        if (delete_btn) {
+            delete_btn.addEventListener('click', e => {
+                let id = e.target.getAttribute('data-id')
+
+                fetch(`/task/delete_file/` + id, {
+                    method: 'DELETE'
+                }).then(window.location.reload())
+            })
+        }
+    </script>
 {% endblock %}
