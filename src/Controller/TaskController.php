@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Task;
+use App\Form\FileRenameFormType;
 use App\Form\TaskCreateFormType;
 use App\Form\TaskEditFormType;
 use App\Repository\TaskRepository;
@@ -89,6 +90,17 @@ class TaskController extends AbstractController
     {
         $task = $this->taskRepository->find($id);
 
+        if (!$task) {
+            $this->addFlash('danger', 'Nie znaleziono takiego zadania');
+            return $this->redirectToRoute('task.index');
+        }
+
+        if ($this->getUser() !== $task->getUserId())
+        {
+            $this->addFlash('danger', 'Nie jesteś właścicielem tego zadania');
+            return $this->redirectToRoute('task.index');
+        }
+
         $form = $this->createForm(TaskEditFormType::class, $task);
 
         $form->handleRequest($request);
@@ -120,11 +132,13 @@ class TaskController extends AbstractController
 
         if (!$task) {
             $this->addFlash('danger', 'Nie znaleziono takiego zadania');
+            return $this->redirectToRoute('task.index');
         }
 
         if ($this->getUser() !== $task->getUserId())
         {
             $this->addFlash('danger', 'Nie jesteś właścicielem tego zadania');
+            return $this->redirectToRoute('task.index');
         }
 
         $this->delete_file($id);
@@ -137,8 +151,26 @@ class TaskController extends AbstractController
      */
     public function download(int $id, string $filename): Response
     {
+        $task = $this->taskRepository->find($id);
+
+        if (!$task) {
+            $this->addFlash('danger', 'Nie znaleziono takiego zadania');
+            return $this->redirectToRoute('task.index');
+        }
+
+        if ($this->getUser() !== $task->getUserId())
+        {
+            $this->addFlash('danger', 'Nie jesteś właścicielem tego pliku');
+            return $this->redirectToRoute('task.index');
+        }
+
         $path = $this->getParameter('uploads_dir');
         $file = new File($path . $id.'/'. $filename);
+
+        if (!$file) {
+            $this->addFlash('danger', 'Nie znaleziono takiego pliku');
+            return $this->redirectToRoute('task.index');
+        }
 
         return $this->file($file);
     }
@@ -149,11 +181,68 @@ class TaskController extends AbstractController
     public function delete_file(int $id): Response
     {
         $task = $this->taskRepository->find($id);
+
+        if (!$task) {
+            $this->addFlash('danger', 'Nie znaleziono takiego zadania');
+            return $this->redirectToRoute('task.index');
+        }
+
+        if ($this->getUser() !== $task->getUserId())
+        {
+            $this->addFlash('danger', 'Nie jesteś właścicielem tego zadania');
+            return $this->redirectToRoute('task.index');
+        }
+
         $task->setAttachment(null);
 
         $this->taskRepository->update();
         $this->fileManagement->delete($id);
 
         return $this->redirectToRoute('task.index');
+    }
+
+    /**
+     * @Route("/rename_file/{id}/{filename}", name="rename_file", methods={"GET", "POST"})
+     */
+    public function rename_file(Request $request, int $id, string $filename): Response
+    {
+        $task = $this->taskRepository->find($id);
+        $oldFilename = $task->getAttachment();
+
+        if (!$task) {
+            $this->addFlash('danger', 'Nie znaleziono takiego zadania');
+            return $this->redirectToRoute('task.index');
+        }
+
+        if ($this->getUser() !== $task->getUserId())
+        {
+            $this->addFlash('danger', 'Nie jesteś właścicielem tego zadania');
+            return $this->redirectToRoute('task.index');
+        }
+
+        if (!$oldFilename) {
+            $this->addFlash('danger', 'To zadanie nie ma pliku');
+            return $this->redirectToRoute('task.index');
+        }
+
+        $form = $this->createForm(FileRenameFormType::class);
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $newFilename = $this->fileManagement->rename($id, $oldFilename, $form->get('name')->getData());
+
+            $task->setAttachment($newFilename);
+            $this->taskRepository->update();
+
+            return $this->redirectToRoute('task.edit', [
+                'id' => $id
+            ]);
+        }
+
+        return $this->render('task/rename.html.twig', [
+            'form' => $form->createView(),
+            'oldFilename' => $oldFilename
+        ]);
     }
 }

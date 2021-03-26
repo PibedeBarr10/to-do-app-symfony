@@ -4,7 +4,6 @@
 
 {% block body %}
     {{ form_start(form) }}
-    {{ form_row(form._token) }}
 
     {{ form_row(form.title) }}
     {{ form_row(form.deadline) }}
@@ -13,9 +12,9 @@
     {% if task.attachment %}
         {{ form_row(form.attachment, {'attr': {'class': 'invisible'}}) }}
         <div class="d-flex justify-content-between">
-            <a href="{{ path('task.download', {id: task.id, filename: task.attachment}) }}" class="align-middle">{{ task.attachment }}</a>
+            <a href="{{ path('task.download', {id: task.id, filename: task.attachment}) }}" class="btn btn-info">{{ task.attachment }}</a>
             <div class="float-right">
-                <a href="#" class="btn btn-info">Zmień nazwę</a>
+                <a href="{{ path('task.rename_file', {id: task.id, filename: task.attachment}) }}" class="btn btn-dark">Zmień nazwę</a>
                 <a href="#" id="delete" data-id="{{ task.id }}" class="btn btn-danger delete-task">Usuń</a>
             </div>
         </div>

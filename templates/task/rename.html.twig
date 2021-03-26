@@ -1,0 +1,10 @@
+{% extends('base.html.twig') %}
+
+{% block title %}Edytuj nazwę pliku{% endblock %}
+
+{% block body %}
+    {{ form_start(form) }}
+    <p>Stara nazwa pliku: {{ oldFilename }}</p>
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}

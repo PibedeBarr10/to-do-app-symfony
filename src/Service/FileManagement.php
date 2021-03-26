@@ -41,4 +41,13 @@ class FileManagement
         $path = $this->targetDirectory.$id.'/';
         $this->filesystem->remove($path);
     }
+
+    public function rename(int $id, string $oldFilename, string $newFilename)
+    {
+        $path = $this->targetDirectory.$id.'/';
+
+        $extension = pathinfo($path.$oldFilename)['extension'];
+        $this->filesystem->rename($path.$oldFilename, $path.$newFilename.'.'.$extension);
+        return $newFilename.'.'.$extension;
+    }
 }
