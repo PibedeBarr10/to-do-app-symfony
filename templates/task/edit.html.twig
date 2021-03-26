@@ -3,6 +3,14 @@
 {% block title %}Edytuj zadanie{% endblock %}
 
 {% block body %}
+    {% for label, messages in app.flashes(['danger', 'success']) %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
     {{ form_start(form) }}
 
     {{ form_row(form.title) }}

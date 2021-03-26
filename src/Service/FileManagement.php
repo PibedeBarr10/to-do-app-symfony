@@ -5,6 +5,7 @@ namespace App\Service;
 
 
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
@@ -34,6 +35,17 @@ class FileManagement
         );
 
         return $fileName;
+    }
+
+    public function download(int $id, string $filename)
+    {
+        $path = $this->targetDirectory.$id.'/';
+        if (!$this->filesystem->exists($path . $id.'/'. $filename)) {
+            return null;
+        }
+        $file = new File($path . $id.'/'. $filename);
+
+        return $this->file($file);
     }
 
     public function delete(int $id)

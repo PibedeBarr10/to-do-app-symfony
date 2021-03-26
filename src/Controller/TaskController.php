@@ -9,9 +9,7 @@ use App\Form\TaskEditFormType;
 use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Service\FileManagement;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -164,12 +162,13 @@ class TaskController extends AbstractController
             return $this->redirectToRoute('task.index');
         }
 
-        $path = $this->getParameter('uploads_dir');
-        $file = new File($path . $id.'/'. $filename);
+        $file = $this->fileManagement->download($id, $filename);
 
         if (!$file) {
             $this->addFlash('danger', 'Nie znaleziono takiego pliku');
-            return $this->redirectToRoute('task.index');
+            return $this->redirectToRoute('task.edit', [
+                'id' => $id
+            ]);
         }
 
         return $this->file($file);
@@ -207,7 +206,6 @@ class TaskController extends AbstractController
     public function rename_file(Request $request, int $id, string $filename): Response
     {
         $task = $this->taskRepository->find($id);
-        $oldFilename = $task->getAttachment();
 
         if (!$task) {
             $this->addFlash('danger', 'Nie znaleziono takiego zadania');
@@ -220,10 +218,14 @@ class TaskController extends AbstractController
             return $this->redirectToRoute('task.index');
         }
 
-        if (!$oldFilename) {
+        if ($task->getAttachment() === null) {
             $this->addFlash('danger', 'To zadanie nie ma pliku');
-            return $this->redirectToRoute('task.index');
+            return $this->redirectToRoute('task.edit', [
+                'id' => $id
+            ]);
         }
+
+        $oldFilename = $task->getAttachment();
 
         $form = $this->createForm(FileRenameFormType::class);
 
