@@ -5,7 +5,6 @@ namespace App\Service;
 
 
 use Symfony\Component\Filesystem\Filesystem;
-// use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\Stream;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -27,13 +26,12 @@ class FileManagement
     public function upload(UploadedFile $file): array
     {
         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        // this is needed to safely include the file name as part of the URL
         $safeFilename = $this->slugger->slug($originalFilename);
         $fileName = $safeFilename.'.'.$file->guessExtension();
         $unique_name = uniqid(time()).'.'.$file->guessExtension();
 
         $file->move(
-            $this->targetDirectory.'/',
+            $this->targetDirectory,
             $unique_name
         );
 
@@ -42,25 +40,23 @@ class FileManagement
 
     public function download(string $filename)
     {
-        $path = $this->targetDirectory.'/';
-        if (!$this->filesystem->exists($path . '/'. $filename)) {
+        $path = $this->targetDirectory;
+        if (!$this->filesystem->exists($path.$filename)) {
             return null;
         }
-        $file = new Stream($path . '/'. $filename);
-        $response = new BinaryFileResponse($file);
+        $file = new Stream($path.$filename);
 
-        return $response;
+        return new BinaryFileResponse($file);
     }
 
     public function delete(string $filename)
     {
-        $path = $this->targetDirectory.'/';
-        $this->filesystem->remove($path.'/'.$filename);
+        $this->filesystem->remove($this->targetDirectory.$filename);
     }
 
     public function rename(string $oldFilename, string $newFilename)
     {
-        $path = $this->targetDirectory.'/';
+        $path = $this->targetDirectory;
 
         $extension = pathinfo($path.$oldFilename)['extension'];
         $this->filesystem->rename($path.$oldFilename, $path.$newFilename.'.'.$extension);

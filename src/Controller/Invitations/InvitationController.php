@@ -52,8 +52,9 @@ class InvitationController extends AbstractController
                 $email,
                 'Zaproszenie do rejestracji',
                 'invitation/email.html.twig',
-                null,
-                $token
+                [
+                    'token' => $token
+                ]
             );
 
             $this->addFlash('success', 'Wysłano zaproszenie');
