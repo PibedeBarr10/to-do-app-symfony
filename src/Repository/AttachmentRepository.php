@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Attachment;
 use App\Entity\Task;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -31,6 +32,19 @@ class AttachmentRepository extends ServiceEntityRepository
         $this->_em->remove($attachment);
         $this->_em->flush();
     }
+
+    public function add_file(Task $task, string $unique_name, string $originalFilename)
+    {
+        $attachment = new Attachment();
+        $attachment->setTask($task);
+        $attachment->setUniqueName($unique_name);
+        $attachment->setName($originalFilename);
+        $attachment->setCreationDate(new DateTime());
+
+        $this->save($attachment);
+        $task->addAttachment($attachment);
+    }
+
     // /**
     //  * @return Attachment[] Returns an array of Attachment objects
     //  */

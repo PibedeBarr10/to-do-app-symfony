@@ -15,13 +15,13 @@ class DeleteTask extends TaskController
 {
     public function __construct(
         TaskRepository $taskRepository,
-        AttachmentRepository $attachmentRepository,
-        FileManagement $fileManagement
+        FileManagement $fileManagement,
+        AttachmentRepository $attachmentRepository
     ) {
         parent::__construct(
             $taskRepository,
-            $attachmentRepository,
-            $fileManagement
+            $fileManagement,
+            $attachmentRepository
         );
     }
 
@@ -31,9 +31,7 @@ class DeleteTask extends TaskController
     public function delete(int $id): Response
     {
         $task = $this->taskRepository->find($id);
-        $taskfiles = $this->attachmentRepository->findBy([
-            'task' => $task
-        ]);
+
 
         if (!$task) {
             $this->addFlash('danger', 'Nie znaleziono takiego zadania');
@@ -44,6 +42,10 @@ class DeleteTask extends TaskController
             $this->addFlash('danger', 'Nie jesteś właścicielem tego zadania');
             return $this->redirectToRoute('task.index');
         }
+
+        $taskfiles = $this->attachmentRepository->findBy([
+            'task' => $task
+        ]);
 
         if ($taskfiles) {
             foreach ($taskfiles as $file) {

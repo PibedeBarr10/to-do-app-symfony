@@ -4,13 +4,10 @@
 namespace App\Controller\Tasks;
 
 use App\Controller\TaskController;
-use DateTime;
-use App\Entity\Attachment;
 use App\Form\TaskEditFormType;
 use App\Repository\AttachmentRepository;
 use App\Repository\TaskRepository;
 use App\Service\FileManagement;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,13 +16,13 @@ class EditTask extends TaskController
 {
     public function __construct(
         TaskRepository $taskRepository,
-        AttachmentRepository $attachmentRepository,
-        FileManagement $fileManagement
+        FileManagement $fileManagement,
+        AttachmentRepository $attachmentRepository
     ) {
         parent::__construct(
             $taskRepository,
-            $attachmentRepository,
-            $fileManagement
+            $fileManagement,
+            $attachmentRepository
         );
     }
 
@@ -55,14 +52,11 @@ class EditTask extends TaskController
             if ($file) {
                 [$originalFilename, $unique_name] = $this->fileManagement->upload($file);
 
-                $attachment = new Attachment();
-                $attachment->setTask($task);
-                $attachment->setUniqueName($unique_name);
-                $attachment->setName($originalFilename);
-                $attachment->setCreationDate(new DateTime());
-
-                $this->attachmentRepository->save($attachment);
-                $task->addAttachment($attachment);
+                $this->attachmentRepository->add_file(
+                    $task,
+                    $unique_name,
+                    $originalFilename
+                );
             }
 
             $this->taskRepository->save($task);

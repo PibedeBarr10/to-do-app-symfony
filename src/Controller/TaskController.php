@@ -12,17 +12,17 @@ use Symfony\Component\Routing\Annotation\Route;
 class TaskController extends AbstractController
 {
     protected TaskRepository $taskRepository;
-    protected AttachmentRepository $attachmentRepository;
     protected FileManagement $fileManagement;
+    protected AttachmentRepository $attachmentRepository;
 
     public function __construct(
         TaskRepository $taskRepository,
-        AttachmentRepository $attachmentRepository,
-        FileManagement $fileManagement
+        FileManagement $fileManagement,
+        AttachmentRepository $attachmentRepository
     ) {
         $this->taskRepository = $taskRepository;
-        $this->attachmentRepository = $attachmentRepository;
         $this->fileManagement = $fileManagement;
+        $this->attachmentRepository = $attachmentRepository;
     }
 
     /**

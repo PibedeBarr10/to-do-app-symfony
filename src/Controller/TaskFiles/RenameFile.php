@@ -17,13 +17,13 @@ class RenameFile extends TaskController
 {
     public function __construct(
         TaskRepository $taskRepository,
-        AttachmentRepository $attachmentRepository,
-        FileManagement $fileManagement
+        FileManagement $fileManagement,
+        AttachmentRepository $attachmentRepository
     ) {
         parent::__construct(
             $taskRepository,
-            $attachmentRepository,
-            $fileManagement
+            $fileManagement,
+            $attachmentRepository
         );
     }
 

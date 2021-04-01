@@ -4,8 +4,6 @@
 namespace App\Controller\Tasks;
 
 use App\Controller\TaskController;
-use DateTime;
-use App\Entity\Attachment;
 use App\Entity\Task;
 use App\Form\TaskCreateFormType;
 use App\Repository\AttachmentRepository;
@@ -19,13 +17,13 @@ class CreateTask extends TaskController
 {
     public function __construct(
         TaskRepository $taskRepository,
-        AttachmentRepository $attachmentRepository,
-        FileManagement $fileManagement
+        FileManagement $fileManagement,
+        AttachmentRepository $attachmentRepository
     ) {
         parent::__construct(
             $taskRepository,
-            $attachmentRepository,
-            $fileManagement
+            $fileManagement,
+            $attachmentRepository
         );
     }
 
@@ -50,14 +48,11 @@ class CreateTask extends TaskController
             if ($file) {
                 [$originalFilename, $unique_name] = $this->fileManagement->upload($file);
 
-                $attachment = new Attachment();
-                $attachment->setTask($task);
-                $attachment->setUniqueName($unique_name);
-                $attachment->setName($originalFilename);
-                $attachment->setCreationDate(new DateTime());
-
-                $this->attachmentRepository->save($attachment);
-                $task->addAttachment($attachment);
+                $this->attachmentRepository->add_file(
+                    $task,
+                    $unique_name,
+                    $originalFilename
+                );
             }
 
             $this->taskRepository->save($task);
