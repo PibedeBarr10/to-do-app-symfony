@@ -14,6 +14,7 @@ class FileRenameFormType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
+                'required' => true,
                 'label' => 'Nowa nazwa pliku:',
                 'attr' => [
                     'class' => 'form-control'

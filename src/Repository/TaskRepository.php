@@ -31,11 +31,6 @@ class TaskRepository extends ServiceEntityRepository
         $this->_em->flush();
     }
 
-    public function update()
-    {
-        $this->_em->flush();
-    }
-
     public function findUserTasks(int $id)
     {
         $qb = $this->getEntityManager()->createQueryBuilder()

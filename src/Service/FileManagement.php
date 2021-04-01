@@ -5,8 +5,9 @@ namespace App\Service;
 
 
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\File;
+use Symfony\Component\HttpFoundation\File\Stream;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 class FileManagement
@@ -22,41 +23,40 @@ class FileManagement
         $this->slugger = $slugger;
     }
 
-    public function upload(int $id, UploadedFile $file): string
+    public function upload(UploadedFile $file): array
     {
         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-        // this is needed to safely include the file name as part of the URL
         $safeFilename = $this->slugger->slug($originalFilename);
         $fileName = $safeFilename.'.'.$file->guessExtension();
+        $unique_name = uniqid(time()).'.'.$file->guessExtension();
 
         $file->move(
-            $this->targetDirectory.$id.'/',
-            $fileName
+            $this->targetDirectory,
+            $unique_name
         );
 
-        return $fileName;
+        return [$fileName, $unique_name];
     }
 
-    public function download(int $id, string $filename)
+    public function download(string $filename)
     {
-        $path = $this->targetDirectory.$id.'/';
-        if (!$this->filesystem->exists($path . $id.'/'. $filename)) {
+        $path = $this->targetDirectory;
+        if (!$this->filesystem->exists($path.$filename)) {
             return null;
         }
-        $file = new File($path . $id.'/'. $filename);
+        $file = new Stream($path.$filename);
 
-        return $this->file($file);
+        return new BinaryFileResponse($file);
     }
 
-    public function delete(int $id)
+    public function delete(string $filename)
     {
-        $path = $this->targetDirectory.$id.'/';
-        $this->filesystem->remove($path);
+        $this->filesystem->remove($this->targetDirectory.$filename);
     }
 
-    public function rename(int $id, string $oldFilename, string $newFilename)
+    public function rename(string $oldFilename, string $newFilename)
     {
-        $path = $this->targetDirectory.$id.'/';
+        $path = $this->targetDirectory;
 
         $extension = pathinfo($path.$oldFilename)['extension'];
         $this->filesystem->rename($path.$oldFilename, $path.$newFilename.'.'.$extension);
