@@ -29,16 +29,15 @@ class RegistrationController extends AbstractController
 
         $form = $this->createForm(RegistrationFormType::class, $user);
         
-        $form -> handleRequest($request);
+        $form->handleRequest($request);
 
-        if ($form -> isSubmitted() && $form -> isValid())
-        {
-            $dataForm = $form -> getData();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $dataForm = $form->getData();
             $duplicate = $this->userRepository->findOneBy(['email' => $dataForm->getEmail()]);
 
             if (!is_object($duplicate)) {
-                $user -> setPassword(
-                    $passwordEncoder -> encodePassword($user, $dataForm->getPassword())
+                $user->setPassword(
+                    $passwordEncoder->encodePassword($user, $dataForm->getPassword())
                 );
 
                 $this->userRepository->save($user);

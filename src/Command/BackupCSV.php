@@ -14,8 +14,10 @@ class BackupCSV extends Command
     private TaskRepository $taskRepository;
     private Mailer $mailer;
 
-    public function __construct(TaskRepository $taskRepository, Mailer $mailer)
-    {
+    public function __construct(
+        TaskRepository $taskRepository,
+        Mailer $mailer
+    ) {
         parent::__construct();
         $this->taskRepository = $taskRepository;
         $this->mailer = $mailer;
@@ -55,7 +57,6 @@ class BackupCSV extends Command
 
         fclose($file);
         $this->mailer->sendMail(
-            'hello@example.com',
             'you@example.com',
             'Codzienny backup zadań',
             'command/backup.html.twig',

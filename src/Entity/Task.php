@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -38,9 +40,14 @@ class Task
     private $checked;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\Attachment", mappedBy="task")
      */
     private $attachment;
+
+    public function __construct()
+    {
+        $this->attachment = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -95,15 +102,34 @@ class Task
         return $this;
     }
 
-    public function getAttachment(): ?string
+    /**
+     * @return Collection|Attachment[]
+     */
+    public function getAttachment(): Collection
     {
         return $this->attachment;
     }
 
-    public function setAttachment(?string $attachment): self
+    public function addAttachment(Attachment $attachment): self
     {
-        $this->attachment = $attachment;
+        if (!$this->attachment->contains($attachment)) {
+            $this->attachment[] = $attachment;
+            $attachment->setTask($this);
+        }
 
         return $this;
     }
+
+    public function removeAttachment(Attachment $attachment): self
+    {
+        if ($this->attachment->removeElement($attachment)) {
+            // set the owning side to null (unless already changed)
+            if ($attachment->getTask() === $this) {
+                $attachment->setTask(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

@@ -4,19 +4,24 @@
 namespace App\Service;
 
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Mailer\MailerInterface;
 
 class Mailer
 {
-    protected MailerInterface $mailer;
+    private MailerInterface $mailer;
+    private ParameterBagInterface $parameterBag;
 
-    public function __construct(MailerInterface $mailer)
-    {
+    public function __construct(
+        MailerInterface $mailer,
+        ParameterBagInterface $parameterBag
+    ) {
         $this->mailer = $mailer;
+        $this->parameterBag = $parameterBag;
     }
 
     public function sendMail(
-        string $from,
         string $to,
         string $subject,
         string $htmlTemplate,
@@ -25,7 +30,7 @@ class Mailer
     ): void
     {
         $email = (new TemplatedEmail())
-            ->from($from)
+            ->from($this->parameterBag->get('system_mail_from'))
             ->to($to)
             ->subject($subject)
             ->htmlTemplate($htmlTemplate);
