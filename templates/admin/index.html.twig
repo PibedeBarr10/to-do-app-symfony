@@ -1,6 +1,6 @@
-{% extends('base.html.twig') %}
+{% extends 'base.html.twig' %}
 
-{% block title %}To-Do App{% endblock %}
+{% block title %}Panel administracyjny{% endblock %}
 
 {% block body %}
     {% for label, messages in app.flashes(['error', 'success']) %}
@@ -11,8 +11,6 @@
         {% endfor %}
     {% endfor %}
 
-    <h1>Witamy w aplikacji To-Do App!</h1>
-    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-        <a href="{{ path('invite') }}">Zaproś znajomego</a>
-    {% endif %}
+    <h1>Witamy admina!</h1>
+    <a href="{{ path('sendBackup') }}" class="btn btn-primary mt-3">Wyślij backup</a>
 {% endblock %}

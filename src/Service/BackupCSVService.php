@@ -4,7 +4,6 @@
 namespace App\Service;
 
 use App\Repository\TaskRepository;
-use App\Service\Mailer;
 
 class BackupCSVService
 {
@@ -21,7 +20,7 @@ class BackupCSVService
 
     public function sendCSV(): void
     {
-        $file = fopen('public/tasks.csv', 'w');
+        $file = fopen('tasks.csv', 'w');
         $tasks = $this->taskRepository->findAll();
 
         foreach ($tasks as $task)
@@ -40,7 +39,7 @@ class BackupCSVService
             'you@example.com',
             'Codzienny backup zadań',
             'command/backup.html.twig',
-            'public/tasks.csv'
+            'tasks.csv'
         );
     }
 }

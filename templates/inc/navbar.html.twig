@@ -6,27 +6,33 @@
         </button>
 
         <div class="collapse navbar-collapse" id="mobile-nav">
-            {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a href="{{ path('task.index') }}" class="nav-link">Zadania</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ path('task.create') }}" class="nav-link">Nowe zadanie</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ path('app_logout') }}" class="nav-link">Wyloguj się</a>
-                </li>
-            </ul>
-            {% else %}
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a href="{{ path('register') }}" class="nav-link">Zarejestruj się</a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ path('app_login') }}" class="nav-link">Zaloguj się</a>
-                </li>
-            </ul>
+            {% if is_granted('ROLE_ADMIN') %}
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a href="{{ path('app_logout') }}" class="nav-link">Wyloguj się</a>
+                    </li>
+                </ul>
+            {% elseif is_granted('ROLE_USER') %}
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a href="{{ path('task.index') }}" class="nav-link">Zadania</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('task.create') }}" class="nav-link">Nowe zadanie</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_logout') }}" class="nav-link">Wyloguj się</a>
+                    </li>
+                </ul>
+            {% elseif is_granted('IS_AUTHENTICATED_ANONYMOUSLY') %}
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item">
+                        <a href="{{ path('register') }}" class="nav-link">Zarejestruj się</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ path('app_login') }}" class="nav-link">Zaloguj się</a>
+                    </li>
+                </ul>
             {% endif %}
         </div>
     </div>

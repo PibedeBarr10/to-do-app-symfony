@@ -34,4 +34,15 @@ class SecurityController extends AbstractController
     {
 
     }
+
+    /**
+     * @Route("/redirect", name="redirect_to")
+     */
+    public function redirect_to(): Response
+    {
+        if ($this->getUser()->getRoles()[0] === 'ROLE_ADMIN') {
+            return $this->redirectToRoute('dashboard');
+        }
+        return $this->redirectToRoute('task.index');
+    }
 }
