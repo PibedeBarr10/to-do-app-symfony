@@ -9,6 +9,7 @@ use App\Form\TaskCreateFormType;
 use App\Repository\AttachmentRepository;
 use App\Repository\TaskRepository;
 use App\Service\FileManagement;
+use DateTime;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -41,6 +42,7 @@ class CreateTask extends TaskController
         if ($form->isSubmitted() && $form->isValid()) {
 
             $task->setUserId($this->getUser());
+            $task->setCreationDate(new DateTime());
 
             $this->taskRepository->save($task);
 

@@ -30,7 +30,8 @@ class BackupCSVService
                 $task->getTitle(),
                 $task->getDeadline()->format('d-m-Y'),
                 $task->getUserId()->getId(),
-                $task->getChecked()
+                $task->getChecked(),
+                $task->getCreationDate()->format('d-m-Y')
             ]);
         }
 

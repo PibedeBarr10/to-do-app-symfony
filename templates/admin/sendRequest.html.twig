@@ -1,0 +1,16 @@
+{% extends('base.html.twig') %}
+
+{% block title %}Wyślij raport{% endblock %}
+
+{% block body %}
+    {% for label, messages in app.flashes(['error', 'success']) %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label }}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+    {{ form_start(form) }}
+    {{ form_widget(form) }}
+    {{ form_end(form) }}
+{% endblock %}

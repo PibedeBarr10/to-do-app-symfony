@@ -9,6 +9,9 @@
             {% if is_granted('ROLE_ADMIN') %}
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item">
+                        <a href="{{ path('dashboard') }}" class="nav-link">Panel administracyjny</a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{{ path('app_logout') }}" class="nav-link">Wyloguj się</a>
                     </li>
                 </ul>

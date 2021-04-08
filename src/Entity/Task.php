@@ -44,6 +44,11 @@ class Task
      */
     private $attachment;
 
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $creation_date;
+
     public function __construct()
     {
         $this->attachment = new ArrayCollection();
@@ -128,6 +133,18 @@ class Task
                 $attachment->setTask(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreationDate(): ?\DateTimeInterface
+    {
+        return $this->creation_date;
+    }
+
+    public function setCreationDate(\DateTimeInterface $creation_date): self
+    {
+        $this->creation_date = $creation_date;
 
         return $this;
     }

@@ -12,5 +12,7 @@
     {% endfor %}
 
     <h1>Witamy admina!</h1>
-    <a href="{{ path('sendBackup') }}" class="btn btn-primary mt-3">Wyślij backup</a>
+    <a href="{{ path('sendBackup') }}" class="btn btn-secondary mt-3">Wyślij backup</a>
+    <a href="{{ path('sendReport') }}" class="btn btn-primary mt-3">Wyślij raport</a>
+    <a href="{{ path('sendReports') }}" class="btn btn-primary mt-3">Wyślij wszystkie raporty</a>
 {% endblock %}
