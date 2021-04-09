@@ -5,7 +5,6 @@ namespace App\Service;
 
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
-// use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\Mailer\MailerInterface;
 
 class Mailer
