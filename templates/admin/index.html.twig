@@ -3,7 +3,7 @@
 {% block title %}Panel administracyjny{% endblock %}
 
 {% block body %}
-    {% for label, messages in app.flashes(['error', 'success']) %}
+    {% for label, messages in app.flashes(['danger', 'success']) %}
         {% for message in messages %}
             <div class="alert alert-{{ label }}" role="alert">
                 {{ message }}

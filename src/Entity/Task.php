@@ -149,4 +149,25 @@ class Task
         return $this;
     }
 
+    public function isOutOfDeadline(): bool
+    {
+        $now = new \DateTime('today');
+
+        return ($this->getDeadline() < $now && !$this->getChecked());
+    }
+
+    public function isCreatedInLastXDays(int $days): bool
+    {
+        $date = new \DateTime('today');
+        $date->modify('-'.$days.' days');
+        $creation_date = new \DateTime($this->getCreationDate()->format('Y-m-d'));
+
+        return $creation_date > $date;
+    }
+
+    public function isCreatedInLastXDays2(int $days): bool
+    {
+        $today = new \DateTime('today');
+        return ($today->diff($this->getCreationDate())->d <= $days);
+    }
 }

@@ -4,10 +4,8 @@
 namespace App\Service\MailerApp;
 
 use App\Entity\User;
-use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpClient\HttpClient;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class SendRequest
 {
@@ -20,18 +18,18 @@ class SendRequest
         $this->parameterBag = $parameterBag;
     }
 
-    public function sendRequest(UserInterface $admin, User $user): ResponseInterface
+    public function sendRequest(User $user): string
     {
         [$tasks_array, $body] = $this->tasksArrays->getTasksArrays($user->getId());
 
         $httpClient = HttpClient::create([
             'auth_basic' => [
-                $admin->getUsername(),
+                $this->parameterBag->get('mailer_app_username'),
                 $this->parameterBag->get('mailer_app_password')
             ]
         ]);
         $response = $httpClient->request('POST',
-            'http://www.mailer-app.com/sendMail',
+            $this->parameterBag->get('api_url'),
             [
                 'json' => [
                     'email' => $user->getUsername(),
@@ -41,6 +39,10 @@ class SendRequest
             ]
         );
 
-        return $response;
+        if (200 !== $response->getStatusCode()) {
+            throw new \Exception(json_decode($response->getContent()), $response->getStatusCode());
+        }
+
+        return json_decode($response->getContent());
     }
 }

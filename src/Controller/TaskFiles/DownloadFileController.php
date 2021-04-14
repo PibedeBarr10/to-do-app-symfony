@@ -4,26 +4,28 @@
 namespace App\Controller\TaskFiles;
 
 
-use App\Controller\TaskController;
 use App\Repository\AttachmentRepository;
 use App\Repository\TaskRepository;
 use App\Service\FileManagement;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 
-class DownloadFile extends TaskController
+class DownloadFileController extends AbstractController
 {
+    private TaskRepository $taskRepository;
+    private FileManagement $fileManagement;
+    private AttachmentRepository $attachmentRepository;
+
     public function __construct(
         TaskRepository $taskRepository,
         FileManagement $fileManagement,
         AttachmentRepository $attachmentRepository
     ) {
-        parent::__construct(
-            $taskRepository,
-            $fileManagement,
-            $attachmentRepository
-        );
+        $this->taskRepository = $taskRepository;
+        $this->fileManagement = $fileManagement;
+        $this->attachmentRepository = $attachmentRepository;
     }
 
     /**

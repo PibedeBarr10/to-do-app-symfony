@@ -11,8 +11,9 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Throwable;
 
-class SendReport extends AbstractController
+class SendReportController extends AbstractController
 {
     private UserRepository $userRepository;
     private SendRequest $sendRequest;
@@ -39,18 +40,18 @@ class SendReport extends AbstractController
             ]);
 
             if (!$user) {
-                $this->addFlash('error', 'Brak takiego maila w bazie danych');
-                return $this->redirectToRoute('sendRequest');
+                $this->addFlash('danger', 'Brak takiego maila w bazie danych');
+                return $this->redirectToRoute('sendReport');
             }
 
-            $response = $this->sendRequest->sendRequest($this->getUser(), $user);
-
-            if (200 !== $response->getStatusCode()) {
-                $this->addFlash('error', 'Błąd');
-                return $this->redirectToRoute('sendRequest');
+            try {
+                $message = $this->sendRequest->sendRequest($user);
+            } catch (Throwable $exception) {
+                $this->addFlash('danger', $exception->getMessage());
+                return $this->redirectToRoute('sendReport');
             }
 
-            $this->addFlash('success', $response->getContent());
+            $this->addFlash('success', $message);
             return $this->redirectToRoute('dashboard');
         }
 
@@ -65,12 +66,11 @@ class SendReport extends AbstractController
     public function sendReports(): Response
     {
         $users = $this->userRepository->findAll();
-        foreach ($users as $user)
-        {
-            $response = $this->sendRequest->sendRequest($this->getUser(), $user);
-
-            if (200 !== $response->getStatusCode()) {
-                $this->addFlash('error', 'Błąd w wysyłaniu raportów');
+        foreach ($users as $user) {
+            try {
+                $this->sendRequest->sendRequest($user);
+            } catch (Throwable $e) {
+                $this->addFlash('danger', 'Błąd w wysyłaniu raportów - kod '.$e->getCode());
                 return $this->redirectToRoute('dashboard');
             }
         }

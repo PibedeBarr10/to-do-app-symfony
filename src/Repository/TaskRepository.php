@@ -41,4 +41,20 @@ class TaskRepository extends ServiceEntityRepository
         ;
         return $qb->getQuery()->getResult();
     }
+
+    public function findLastUserTasks(int $id)
+    {
+        $date = new \DateTime('today');
+        $date->modify('-7 days');
+
+        $qb = $this->getEntityManager()->createQueryBuilder()
+            ->select('t')
+            ->from('App:Task', 't')
+            ->where('t.user_id = :id')
+            ->andWhere('t.deadline > :date')
+            ->setParameter('id', $id)
+            ->setParameter('date', $date)
+        ;
+        return $qb->getQuery()->getResult();
+    }
 }

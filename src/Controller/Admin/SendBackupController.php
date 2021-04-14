@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\BackupCSVService;
 
-class SendBackup extends AbstractController
+class SendBackupController extends AbstractController
 {
     private BackupCSVService $backupCSVService;
 

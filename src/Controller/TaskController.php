@@ -11,9 +11,9 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TaskController extends AbstractController
 {
-    protected TaskRepository $taskRepository;
-    protected FileManagement $fileManagement;
-    protected AttachmentRepository $attachmentRepository;
+    private TaskRepository $taskRepository;
+    private FileManagement $fileManagement;
+    private AttachmentRepository $attachmentRepository;
 
     public function __construct(
         TaskRepository $taskRepository,

@@ -3,27 +3,29 @@
 
 namespace App\Controller\Tasks;
 
-use App\Controller\TaskController;
 use App\Form\TaskEditFormType;
 use App\Repository\AttachmentRepository;
 use App\Repository\TaskRepository;
 use App\Service\FileManagement;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-class EditTask extends TaskController
+class EditTaskController extends AbstractController
 {
+    private TaskRepository $taskRepository;
+    private FileManagement $fileManagement;
+    private AttachmentRepository $attachmentRepository;
+
     public function __construct(
         TaskRepository $taskRepository,
         FileManagement $fileManagement,
         AttachmentRepository $attachmentRepository
     ) {
-        parent::__construct(
-            $taskRepository,
-            $fileManagement,
-            $attachmentRepository
-        );
+        $this->taskRepository = $taskRepository;
+        $this->fileManagement = $fileManagement;
+        $this->attachmentRepository = $attachmentRepository;
     }
 
     /**
