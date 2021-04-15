@@ -20,7 +20,7 @@ class SendRequest
 
     public function sendRequest(User $user): string
     {
-        [$tasks_array, $body] = $this->tasksArrays->getTasksArrays($user->getId());
+        [$tasks_array, $email_data] = $this->tasksArrays->getTasksArrays($user->getId());
 
         $httpClient = HttpClient::create([
             'auth_basic' => [
@@ -33,7 +33,7 @@ class SendRequest
             [
                 'json' => [
                     'email' => $user->getUsername(),
-                    'body' => $body,
+                    'email_data' => $email_data,
                     'file_data' => $tasks_array
                 ]
             ]

@@ -18,7 +18,7 @@ class TasksArrays
     {
         $tasks = $this->taskRepository->findUserTasks($id);
 
-        $body = ['Informacje:'];
+        $tasks_array = [];
         $tasks_after_deadline = 0;
         $tasks_last_created = 0;
         foreach ($tasks as $task) {
@@ -35,13 +35,14 @@ class TasksArrays
                 'checked' => $task->getChecked() ? 'true' : 'false',
                 'creation_date' => $task->getCreationDate()->format('d-m-Y')
             );
-            $array[] = $array_temp;
+            $tasks_array[] = $array_temp;
         }
+        $email_data = array(
+            'Wszystkie zadania' => count($tasks),
+            'Zadania utworzone w ostatnim tygodniu' => $tasks_last_created,
+            'Zadania po terminie' => $tasks_after_deadline
+        );
 
-        $body[] = 'Ilość posiadanych zadań: ' . count($tasks);
-        $body[] = 'Ilość zadań utworzonych przez ostatni tydzień: ' . $tasks_last_created;
-        $body[] = 'Ilość zadań po terminie: ' . $tasks_after_deadline;
-
-        return [$array, $body];
+        return [$tasks_array, $email_data];
     }
 }
